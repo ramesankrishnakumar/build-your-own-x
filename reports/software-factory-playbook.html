@@ -443,6 +443,10 @@ footer.end ol { font-size: 0.9rem; }
           <li>Deleting data, force-pushing, or deploying to production.</li>
           <li>The final merge.</li>
         </ul>
+        <div class="box key">
+          <span class="label">When can you read less code?</span>
+          <p>Some builders now skim diffs and approve based on the agent's proof. That trust is earned area by area: once an area has a solid verification skill, scripted tests in CI and a run of clean PRs, you can review its changes more lightly. Keep reading every line for security, data and payments code. Letting a bot merge on its own, even for urgent fixes, is the far end of this and not where to start.</p>
+        </div>
       </section>
 
       <!-- 06 -->
@@ -555,7 +559,7 @@ footer.end ol { font-size: 0.9rem; }
           <li data-l="1">
             <h3>Inside the agent loop</h3>
             <p class="meta">Seconds · Claude Code hooks · every edit</p>
-            <p>A <code>PostToolUse</code> hook formats and lints each file right after the agent edits it. A <code>Stop</code> hook runs your fast check command when the agent tries to finish; if it fails, the hook sends the errors back and the agent keeps working. This catches most mistakes before you ever see them, and the shell commands themselves cost no tokens. For UI and API work, also have the agent start the app and try the feature itself: click through it in a browser, or call the endpoint and read the response.</p>
+            <p>A <code>PostToolUse</code> hook formats and lints each file right after the agent edits it. A <code>Stop</code> hook runs your fast check command when the agent tries to finish; if it fails, the hook sends the errors back and the agent keeps working. This catches most mistakes before you ever see them, and the shell commands themselves cost no tokens. For UI and API work, the agent also starts the app and tries the feature itself, following a written <a href="#vskills">verification skill</a>, and attaches screenshots or responses as proof.</p>
           </li>
           <li data-l="2">
             <h3>Pre-commit</h3>
@@ -584,6 +588,62 @@ footer.end ol { font-size: 0.9rem; }
           </li>
         </ol>
 
+        <h3 id="vskills">Verification skills: teach the agent how to test your app</h3>
+        <p>An agent told to "check it works" improvises, so it checks different things each time. A <strong>verification skill</strong> is a written test playbook for one area of your app: how to start it, which test account to use, which scenarios to try, what success looks like, and what evidence to bring back. Builders who use them report that this is what finally lets them stop clicking through every change by hand.</p>
+        <p>Three habits make them work:</p>
+        <ol>
+          <li><strong>One skill per area</strong> of the product, for example <code>verify-checkout</code>, <code>verify-email</code>, <code>verify-auth</code>. Claude Code loads only the one-line description until the agent needs it, so ten of them cost almost nothing.</li>
+          <li><strong>Receipts, not claims.</strong> The agent attaches screenshots, a recording or the actual API responses to the pull request. You look at the proof instead of re-testing.</li>
+          <li><strong>The skills grow with every merge.</strong> After each task, the agent adds the new scenario and anything that tripped it up. The next agent starts from what the last one learned.</li>
+        </ol>
+        <div class="box key">
+          <span class="label">How this fits with CI</span>
+          <p>Verification skills don't replace the CI gate. They sit one step before it: <strong>explore with the agent, write it down in a skill, then turn the important, stable scenarios into scripted tests</strong> that CI runs on every PR. Skills shine where scripts are painful, like flows through third-party services (OAuth logins, email delivery, payments in test mode) or judging whether a screen looks right.</p>
+        </div>
+        <details>
+          <summary>Example skill <span class="path">.claude/skills/verify-checkout/SKILL.md</span></summary>
+          <div class="body"><div class="code"><pre>---
+name: verify-checkout
+description: How to test the checkout flow end to end in the local app. Use after any change to cart, pricing or payment code.
+---
+
+## Setup
+- Start: `npm run dev` (http://localhost:3000). Wait for "ready".
+- Seed: `npm run db:seed:test` creates test@example.com / password123 with 2 items in the cart.
+- Payments use Stripe test mode. Card 4242 4242 4242 4242, any future expiry.
+
+## Scenarios
+1. Happy path: log in, open /cart, Checkout, pay. Expect /orders/&lt;id&gt; showing "Paid".
+2. Declined card: use 4000 0000 0000 0002. Expect "Card declined" and the cart unchanged.
+3. Regression: with an empty cart, the Checkout button is disabled.
+
+## Evidence
+- Screenshot the final screen of each scenario and attach them to the PR.
+- Paste any API responses you checked.
+
+## Gotchas
+- Webhooks need `stripe listen` running, or orders stay "Pending".
+
+## Last updated
+- After PR #42: added the declined-card scenario.</pre></div></div>
+        </details>
+        <details>
+          <summary>The skill that keeps them current <span class="path">.claude/skills/maintain-verification/SKILL.md</span></summary>
+          <div class="body"><div class="code"><pre>---
+name: maintain-verification
+description: Create or update the verify-&lt;area&gt; skill after verifying a change. Use at the end of every task that changed user-facing behaviour.
+---
+
+1. Find the verify-&lt;area&gt; skill for the area you changed. If none exists, create
+   .claude/skills/verify-&lt;area&gt;/SKILL.md with the sections Setup, Scenarios,
+   Evidence, Gotchas, Last updated.
+2. Add a scenario for the new behaviour: steps plus the expected result.
+3. Add anything that tripped you up to Gotchas.
+4. If a scenario is stable and important, propose a Playwright or API test for it
+   so CI can run it on every PR.
+5. Keep the skill under about 80 lines.</pre></div></div>
+        </details>
+
         <h3>The trap: the agent grading its own homework</h3>
         <p>If the same agent writes the code <em>and</em> the tests, the tests can quietly match the bug. Three defences, in order of effort:</p>
         <ol>
@@ -603,7 +663,7 @@ footer.end ol { font-size: 0.9rem; }
           <table class="t-mid">
             <thead><tr><th>Where</th><th>What the agent does</th><th>Status</th></tr></thead>
             <tbody>
-              <tr><td><strong>While building</strong></td><td>Starts the app, tries the feature in a browser, or calls the endpoint to check its own work.</td><td><span class="chip hi">do this</span></td></tr>
+              <tr><td><strong>While building</strong></td><td>Follows a verification skill: starts the app, tries the feature in a browser or calls the endpoint, and attaches screenshots or responses as proof.</td><td><span class="chip hi">do this</span></td></tr>
               <tr><td><strong>Writing tests</strong></td><td>Turns each acceptance criterion into a Playwright (UI) or API test that you review and commit. Playwright ships planner, generator and healer agents for exactly this.</td><td><span class="chip hi">do this</span></td></tr>
               <tr><td><strong>CI gate</strong></td><td>Nothing. The scripted tests it wrote run here.</td><td><span class="chip md">standard</span></td></tr>
               <tr><td><strong>CI, advisory</strong></td><td>Gets the preview URL and the criteria, explores, posts a comment with findings and screenshots. Never blocks a merge.</td><td><span class="chip lo">optional, later</span></td></tr>
@@ -688,6 +748,7 @@ footer.end ol { font-size: 0.9rem; }
           <li><strong>Subscription vs API key.</strong> Interactive work on a Claude subscription has a predictable monthly cost. Pay-per-token API keys suit CI jobs. Compare both against how much you actually use.</li>
           <li><strong>Make CI agents opt-in.</strong> Run the AI reviewer on a label, not on every PR. Your deterministic CI still runs every time, for free or nearly so.</li>
           <li><strong>Spend the big model where it pays.</strong> Plan with the strongest model, then build and fix with the everyday one.</li>
+          <li><strong>Skip multi-model planning for now.</strong> Some setups ask several models to plan the same feature and have a stronger model judge and merge the plans. It can produce better plans, but it multiplies planning cost. Try it only on a feature where a wrong plan would be expensive.</li>
         </ul>
         <p class="small">Prices change often, so this guide gives no per-token numbers. Check Anthropic's current pricing page when you size a budget.</p>
       </section>
@@ -791,8 +852,9 @@ footer.end ol { font-size: 0.9rem; }
 4. One issue, one branch, one small PR.
 5. Never skip, delete or weaken a test to get green. If a test looks wrong, tell me why.
 6. "Done" means `npm run check` passes. Paste the last lines of its output.
-7. After a UI change, start the app and try each acceptance criterion in the browser.
-   After an API change, call the endpoint and show me the response.
+7. After a UI or API change, verify it in the running app using the matching
+   verify-&lt;area&gt; skill. Attach screenshots or responses to the PR as proof.
+   Then run the maintain-verification skill.
 
 ## When you need a decision from me
 Ask only when the answer changes what you'd do AND the choice is costly to undo.
@@ -980,7 +1042,7 @@ jobs:
 
           <li>
             <h3>Workflow skills and the learning loop</h3>
-            <p>Turn the stations into commands you can call: <code>/spec</code> drafts acceptance criteria from your notes, <code>/plan</code> produces a plan plus Decision Cards, <code>/ship</code> builds, runs checks and opens the PR. Add an issue template so every task starts with criteria. Then once a week, spend ten minutes asking: what went wrong, and which check would have caught it?</p>
+            <p>Turn the stations into commands you can call: <code>/spec</code> drafts acceptance criteria from your notes, <code>/plan</code> produces a plan plus Decision Cards, <code>/ship</code> builds, runs checks and opens the PR. Add an issue template so every task starts with criteria. Add the <a href="#vskills">verification skills</a> one area at a time, starting with the part of your app that breaks most. Then once a week, spend ten minutes asking: what went wrong, and which check or skill would have caught it?</p>
             <details>
               <summary>Example skill <span class="path">.claude/skills/spec/SKILL.md</span></summary>
               <div class="body"><div class="code"><pre>---
@@ -994,6 +1056,8 @@ description: Turn rough notes or an issue into a short spec with testable accept
    ## Problem        (2-3 sentences, user's point of view)
    ## Acceptance criteria
    - [ ] Given ..., when ..., then ...     (each one testable)
+   ## Areas touched       (which parts of the app, so the right verify skills run)
+   ## Must still work     (regression scenarios to re-check)
    ## Out of scope
    ## Risk: low / medium / high, and why
 
@@ -1008,10 +1072,12 @@ about: Work for the factory
 ## Problem
 ## Acceptance criteria
 - [ ] Given ..., when ..., then ...
+## Areas touched
+## Must still work
 ## Out of scope
 ## Risk: low / medium / high</pre></div></div>
             </details>
-            <div class="done"><b>Done when</b>a task goes from issue to merged PR using only your three gate decisions, and your first weekly review adds at least one new check.</div>
+            <div class="done"><b>Done when</b>a task goes from issue to merged PR using only your three gate decisions, the PR carries screenshots from a verify skill, and your first weekly review adds at least one new check.</div>
           </li>
         </ol>
 
@@ -1034,11 +1100,13 @@ about: Work for the factory
           <li>CI workflow running the same check command, set as a required status check.</li>
           <li>Secret scanning and push protection turned on.</li>
           <li>AI reviewer on PR open, capped turns.</li>
-          <li>Issue template with acceptance criteria.</li>
+          <li>Issue template with acceptance criteria, areas touched and must-still-work scenarios.</li>
+          <li>A verify skill for the area that breaks most, plus the maintain-verification skill.</li>
         </ul>
         <h3>Your 5-minute PR review</h3>
         <ul class="checklist">
           <li>CI is green. If not, don't start reading.</li>
+          <li>Look at the proof: do the screenshots or responses show each acceptance criterion working?</li>
           <li>Read the test changes first. Anything deleted, skipped or loosened?</li>
           <li>Does each acceptance criterion have a test?</li>
           <li>Anything outside the issue's scope? Send it back.</li>
