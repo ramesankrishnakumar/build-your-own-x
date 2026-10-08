@@ -1,0 +1,1000 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Software Factory Playbook</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: field-guide page. Sticky station index on the left (wide screens), one reading column on the right.
+   Visual language: factory floor signage. Blue = the line, amber = human gates, green/red = pass/fail. */
+:root {
+  --bg: #F3F5F8;
+  --surface: #FFFFFF;
+  --ink: #16202A;
+  --muted: #55616E;
+  --line: #D8DEE5;
+  --accent: #1E56B0;
+  --accent-soft: #E2EBF8;
+  --gate: #A86C00;
+  --gate-soft: #FFF2D2;
+  --ok: #2B7448;
+  --ok-soft: #E0F1E6;
+  --stop: #AE3636;
+  --stop-soft: #F8E2E2;
+  --code-bg: #EBEFF4;
+  --code-ink: #1A2430;
+
+  --f-display: "Archivo", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
+  --f-body: "IBM Plex Sans", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+
+  --step--1: 0.875rem;
+  --step-0: 1rem;
+  --step-1: 1.2rem;
+  --step-2: 1.5rem;
+  --step-3: 2rem;
+  --step-4: clamp(2.2rem, 5vw, 3.2rem);
+  --radius: 6px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0E1319; --surface: #151C24; --ink: #E5EAF0; --muted: #9AA6B3; --line: #29333F;
+    --accent: #84AEF2; --accent-soft: #1A2942; --gate: #F2B84E; --gate-soft: #392A0E;
+    --ok: #71C493; --ok-soft: #132E1E; --stop: #F08C8C; --stop-soft: #391818;
+    --code-bg: #0A0F15; --code-ink: #D3DCE6;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0E1319; --surface: #151C24; --ink: #E5EAF0; --muted: #9AA6B3; --line: #29333F;
+  --accent: #84AEF2; --accent-soft: #1A2942; --gate: #F2B84E; --gate-soft: #392A0E;
+  --ok: #71C493; --ok-soft: #132E1E; --stop: #F08C8C; --stop-soft: #391818;
+  --code-bg: #0A0F15; --code-ink: #D3DCE6;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--f-body);
+  font-size: var(--step-0);
+  line-height: 1.6;
+}
+a { color: var(--accent); text-underline-offset: 2px; }
+a:focus-visible, summary:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 3px; }
+
+.wrap {
+  max-width: 1160px;
+  margin: 0 auto;
+  padding-inline: 20px;
+  padding-block: 32px 80px;
+}
+.grid { display: grid; grid-template-columns: 1fr; gap: 40px; }
+@media (min-width: 980px) {
+  .grid { grid-template-columns: 210px minmax(0, 1fr); }
+}
+main { min-width: 0; max-width: 760px; }
+
+/* ---------- header ---------- */
+.masthead { border-bottom: 2px solid var(--ink); padding-bottom: 24px; margin-bottom: 28px; }
+.eyebrow {
+  font-family: var(--f-mono); font-size: var(--step--1); letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--muted); margin: 0 0 10px;
+}
+h1, h2, h3 { font-family: var(--f-display); text-wrap: balance; line-height: 1.12; margin: 0; }
+h1 { font-size: var(--step-4); font-weight: 850; font-stretch: 78%; letter-spacing: -0.01em; }
+.deck { font-size: var(--step-1); color: var(--muted); max-width: 62ch; margin: 14px 0 0; }
+
+/* ---------- side index ---------- */
+nav.index { display: none; }
+@media (min-width: 980px) {
+  nav.index {
+    display: block; position: sticky; top: calc(env(safe-area-inset-top, 0px) + 24px);
+    align-self: start; font-size: var(--step--1);
+  }
+}
+nav.index p { font-family: var(--f-mono); text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin: 0 0 8px; font-size: 0.75rem; }
+nav.index ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; counter-reset: idx; }
+nav.index li { counter-increment: idx; }
+nav.index a {
+  display: grid; grid-template-columns: 2.2em 1fr; text-decoration: none; color: var(--ink);
+  padding: 4px 6px; border-radius: 4px;
+}
+nav.index a::before { content: counter(idx, decimal-leading-zero); font-family: var(--f-mono); color: var(--muted); }
+nav.index a:hover { background: var(--accent-soft); }
+
+/* ---------- sections ---------- */
+section { padding-top: 44px; scroll-margin-top: 16px; }
+section > h2 {
+  font-size: var(--step-3); font-weight: 800; font-stretch: 85%;
+  display: flex; gap: 12px; align-items: baseline; flex-wrap: wrap;
+}
+section > h2 .no { font-family: var(--f-mono); font-size: var(--step--1); font-weight: 500; color: var(--muted); letter-spacing: 0.05em; }
+h3 { font-size: var(--step-1); font-weight: 750; font-stretch: 90%; margin-top: 28px; }
+p, ul, ol { max-width: 68ch; }
+p { margin: 12px 0; }
+ul, ol { padding-left: 1.3em; margin: 12px 0; }
+li { margin: 6px 0; }
+.lede {
+  font-size: var(--step-1); line-height: 1.5; margin-top: 14px;
+  border-left: 3px solid var(--accent); padding-left: 14px;
+}
+.small { font-size: var(--step--1); color: var(--muted); }
+code { font-family: var(--f-mono); font-size: 0.88em; background: var(--code-bg); color: var(--code-ink); padding: 1px 5px; border-radius: 4px; }
+
+/* ---------- callouts ---------- */
+.box { border: 1px solid var(--line); background: var(--surface); border-radius: var(--radius); padding: 16px 18px; margin: 18px 0; }
+.box > :first-child { margin-top: 0; }
+.box > :last-child { margin-bottom: 0; }
+.box.gate { background: var(--gate-soft); border-color: transparent; }
+.box.ok { background: var(--ok-soft); border-color: transparent; }
+.box.key { background: var(--accent-soft); border-color: transparent; }
+.box .label {
+  font-family: var(--f-mono); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em;
+  font-weight: 500; margin: 0 0 6px; display: block;
+}
+.box.gate .label { color: var(--gate); }
+.box.ok .label { color: var(--ok); }
+.box.key .label { color: var(--accent); }
+
+/* ---------- TL;DR ---------- */
+.tldr { counter-reset: t; list-style: none; padding: 0; display: grid; gap: 10px; max-width: none; }
+.tldr li { counter-increment: t; display: grid; grid-template-columns: 2.2rem 1fr; gap: 8px; margin: 0; align-items: baseline; }
+.tldr li::before {
+  content: counter(t); font-family: var(--f-display); font-weight: 800; font-size: var(--step-2);
+  color: var(--accent); line-height: 1;
+}
+
+/* ---------- the line (pipeline) ---------- */
+.line-scroll { overflow-x: auto; margin: 22px 0 8px; padding-bottom: 6px; }
+.line {
+  list-style: none; margin: 0; padding: 0; display: flex; gap: 0; min-width: 760px; max-width: none;
+  counter-reset: st;
+}
+.line li { margin: 0; flex: 1 1 0; position: relative; counter-increment: st; padding: 0 6px; }
+.line li::after {
+  content: ""; position: absolute; top: 15px; left: 50%; right: -50%; height: 2px; background: var(--accent);
+  z-index: 0;
+}
+.line li:last-child::after { display: none; }
+.line .dot {
+  position: relative; z-index: 1; width: 32px; height: 32px; margin: 0 auto 8px; border-radius: 50%;
+  background: var(--accent); color: var(--bg); font-family: var(--f-mono); font-size: 0.8rem; font-weight: 500;
+  display: grid; place-items: center;
+}
+.line .dot::before { content: counter(st); }
+.line li.g .dot { background: var(--gate); border-radius: 4px; transform: rotate(45deg); }
+.line li.g .dot::before { transform: rotate(-45deg); }
+.line .nm { display: block; text-align: center; font-family: var(--f-display); font-weight: 750; font-stretch: 88%; font-size: 0.98rem; line-height: 1.2; }
+.line .who { display: block; text-align: center; font-size: 0.78rem; color: var(--muted); margin-top: 4px; line-height: 1.3; }
+.legend { display: flex; flex-wrap: wrap; gap: 16px; font-size: var(--step--1); color: var(--muted); margin: 6px 0 0; }
+.legend span { display: inline-flex; gap: 6px; align-items: center; }
+.legend i { width: 12px; height: 12px; display: inline-block; border-radius: 50%; background: var(--accent); }
+.legend i.g { background: var(--gate); border-radius: 2px; transform: rotate(45deg); }
+
+/* ---------- tables ---------- */
+.table-scroll { overflow-x: auto; margin: 18px 0; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 0.92rem; line-height: 1.45; }
+th, td { text-align: left; vertical-align: top; padding: 10px 12px; border-bottom: 1px solid var(--line); }
+tr:last-child td { border-bottom: 0; }
+th { font-family: var(--f-mono); font-size: 0.74rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); background: var(--bg); }
+td strong { font-weight: 600; }
+.t-wide { min-width: 700px; }
+.t-mid { min-width: 560px; }
+tr.rec td { background: var(--accent-soft); }
+
+/* ---------- chips ---------- */
+.chip {
+  display: inline-block; font-family: var(--f-mono); font-size: 0.72rem; font-weight: 500; letter-spacing: 0.04em;
+  padding: 1px 7px; border-radius: 999px; white-space: nowrap; vertical-align: 1px;
+}
+.chip.hi { background: var(--ok-soft); color: var(--ok); }
+.chip.md { background: var(--accent-soft); color: var(--accent); }
+.chip.lo { background: var(--bg); color: var(--muted); border: 1px solid var(--line); }
+.chip.yes { background: var(--stop-soft); color: var(--stop); }
+.chip.gate { background: var(--gate-soft); color: var(--gate); }
+
+/* ---------- can / cannot ---------- */
+.two { display: grid; grid-template-columns: 1fr; gap: 14px; margin: 18px 0; }
+@media (min-width: 640px) { .two { grid-template-columns: 1fr 1fr; } }
+.two > div { min-width: 0; border-radius: var(--radius); padding: 14px 16px; }
+.two .can { background: var(--ok-soft); }
+.two .cant { background: var(--stop-soft); }
+.two h3 { margin: 0 0 6px; font-size: var(--step-0); }
+.two .can h3 { color: var(--ok); }
+.two .cant h3 { color: var(--stop); }
+.two ul { margin: 0; padding-left: 1.1em; font-size: 0.94rem; }
+
+/* ---------- verification ladder ---------- */
+.ladder { list-style: none; padding: 0; margin: 20px 0; display: grid; gap: 0; max-width: none; border-left: 2px solid var(--line); }
+.ladder > li { margin: 0; padding: 4px 0 18px 22px; position: relative; }
+.ladder > li::before {
+  content: attr(data-l); position: absolute; left: -15px; top: 2px; width: 28px; height: 28px; border-radius: 50%;
+  background: var(--surface); border: 2px solid var(--accent); color: var(--accent);
+  font-family: var(--f-mono); font-size: 0.75rem; display: grid; place-items: center;
+}
+.ladder > li.human::before { border-color: var(--gate); color: var(--gate); border-radius: 4px; }
+.ladder h3 { margin: 0; font-size: var(--step-1); display: flex; gap: 10px; flex-wrap: wrap; align-items: baseline; }
+.ladder .meta { font-family: var(--f-mono); font-size: 0.78rem; color: var(--muted); margin: 2px 0 6px; }
+.ladder p { margin: 6px 0; }
+
+/* ---------- decision card ---------- */
+.card {
+  border: 2px solid var(--gate); border-radius: var(--radius); background: var(--surface); margin: 18px 0; overflow: hidden;
+}
+.card header { background: var(--gate-soft); padding: 12px 16px; }
+.card header .label { font-family: var(--f-mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--gate); }
+.card header p { margin: 4px 0 0; font-family: var(--f-display); font-weight: 750; font-size: var(--step-1); font-stretch: 90%; }
+.card .opts { display: grid; grid-template-columns: 1fr; }
+@media (min-width: 640px) { .card .opts { grid-template-columns: repeat(3, 1fr); } }
+.card .opt { padding: 12px 16px; border-top: 1px solid var(--line); min-width: 0; font-size: 0.9rem; }
+@media (min-width: 640px) { .card .opt + .opt { border-left: 1px solid var(--line); } }
+.card .opt h4 { margin: 0 0 6px; font-family: var(--f-display); font-size: 1rem; font-weight: 750; font-stretch: 90%; }
+.card .opt ul { padding-left: 1.05em; margin: 4px 0; }
+.card .opt li { margin: 2px 0; }
+.card .opt .pro::marker { content: "+  "; color: var(--ok); font-weight: 600; }
+.card .opt .con::marker { content: "–  "; color: var(--stop); font-weight: 600; }
+.card .opt.rec { background: var(--accent-soft); }
+.card footer { border-top: 1px solid var(--line); padding: 10px 16px; font-size: 0.9rem; }
+
+/* ---------- phases ---------- */
+.phases { list-style: none; padding: 0; margin: 20px 0; display: grid; gap: 16px; max-width: none; counter-reset: ph; }
+.phases > li {
+  margin: 0; counter-increment: ph; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 16px 18px; min-width: 0;
+}
+.phases > li > h3 { margin: 0; display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+.phases > li > h3::before { content: "Phase " counter(ph); font-family: var(--f-mono); font-size: 0.75rem; font-weight: 500; color: var(--accent); letter-spacing: 0.06em; text-transform: uppercase; }
+.done { font-size: 0.92rem; margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--line); }
+.done b { font-family: var(--f-mono); font-size: 0.74rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ok); margin-right: 6px; }
+
+/* ---------- code ---------- */
+details { margin: 12px 0; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
+details > summary {
+  cursor: pointer; padding: 10px 14px; font-weight: 600; font-size: 0.94rem; list-style: none;
+  display: flex; gap: 8px; align-items: center;
+}
+details > summary::-webkit-details-marker { display: none; }
+details > summary::before { content: "▸"; color: var(--accent); transition: transform .15s; }
+details[open] > summary::before { transform: rotate(90deg); }
+details > summary .path { font-family: var(--f-mono); font-weight: 400; font-size: 0.82rem; color: var(--muted); }
+details .body { padding: 0 14px 14px; }
+details .body > p:first-child { margin-top: 0; }
+.code { position: relative; }
+pre {
+  margin: 0; background: var(--code-bg); color: var(--code-ink); border-radius: 5px; padding: 14px 16px;
+  font-family: var(--f-mono); font-size: 0.8rem; line-height: 1.55; overflow-x: auto; white-space: pre;
+}
+.copy {
+  position: absolute; top: 8px; right: 8px; font-family: var(--f-mono); font-size: 0.72rem;
+  background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: 4px;
+  padding: 3px 8px; cursor: pointer;
+}
+.copy:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ---------- glossary ---------- */
+dl.terms { display: grid; grid-template-columns: 1fr; gap: 0; margin: 16px 0; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
+dl.terms > div { display: grid; grid-template-columns: 1fr; gap: 2px; padding: 10px 14px; border-bottom: 1px solid var(--line); }
+dl.terms > div:last-child { border-bottom: 0; }
+@media (min-width: 640px) { dl.terms > div { grid-template-columns: 9.5rem 1fr; gap: 14px; } }
+dl.terms dt { font-family: var(--f-mono); font-size: 0.86rem; font-weight: 500; color: var(--accent); }
+dl.terms dd { margin: 0; font-size: 0.94rem; }
+
+.checklist { list-style: none; padding: 0; max-width: none; }
+.checklist li { display: grid; grid-template-columns: 1.5rem 1fr; gap: 6px; margin: 8px 0; }
+.checklist li::before { content: "☐"; color: var(--accent); font-size: 1.05rem; line-height: 1.4; }
+
+footer.end { margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--line); }
+footer.end ol { font-size: 0.9rem; }
+
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="wrap">
+  <header class="masthead">
+    <p class="eyebrow">Field guide · Agentic development · October 2026</p>
+    <h1>The Software Factory Playbook</h1>
+    <p class="deck">How to run an AI coding setup where agents do the building, machines do the checking, and you make the calls that matter. Written for one developer setting up their first factory, without wasting tokens.</p>
+  </header>
+
+  <div class="grid">
+    <nav class="index" aria-label="Sections">
+      <p>Stations</p>
+      <ol>
+        <li><a href="#tldr">The short version</a></li>
+        <li><a href="#terms">Words you'll see</a></li>
+        <li><a href="#what">What a factory is</a></li>
+        <li><a href="#good">What makes it good</a></li>
+        <li><a href="#you">Your role</a></li>
+        <li><a href="#options">Getting clear options</a></li>
+        <li><a href="#verify">Verification</a></li>
+        <li><a href="#tokens">Not burning tokens</a></li>
+        <li><a href="#choose">Custom or open source</a></li>
+        <li><a href="#build">Build yours</a></li>
+        <li><a href="#interview">Interview angle</a></li>
+        <li><a href="#checklist">Checklist</a></li>
+      </ol>
+    </nav>
+
+    <main>
+
+      <!-- 01 -->
+      <section id="tldr" style="padding-top:0">
+        <h2><span class="no">01</span>The short version</h2>
+        <p>If you only read one section, read this one.</p>
+        <ol class="tldr">
+          <li><span><strong>A software factory is a pipeline, not a chatbot.</strong> Work moves through fixed stations: spec, plan, build, verify, review, merge. The agent works inside the stations. You stand at the gates.</span></li>
+          <li><span><strong>You don't get to chill, but you stop typing most of the code.</strong> Your job moves to the two ends: saying exactly what "done" means, and judging whether it is done.</span></li>
+          <li><span><strong>Machines verify, humans decide.</strong> Tests, linters and type checks run automatically inside the agent's loop and again in CI. You are asked questions only at real decision points, through a short "Decision Card" with at most three options.</span></li>
+          <li><span><strong>CI is the source of truth.</strong> An agent saying "all tests pass" is a claim. A green CI run on the pull request is evidence. Branch protection makes CI a hard gate.</span></li>
+          <li><span><strong>Start thin and custom, on top of Claude Code's built-in pieces.</strong> A short <code>CLAUDE.md</code>, three or four hooks, one CI workflow and a few skills. Add an open-source spec framework later only if you feel the pain it solves.</span></li>
+        </ol>
+      </section>
+
+      <!-- 02 -->
+      <section id="terms">
+        <h2><span class="no">02</span>Words you'll see</h2>
+        <p>Nine terms carry the rest of this guide. Skim them now and come back when one shows up.</p>
+        <dl class="terms">
+          <div><dt>Agent</dt><dd>An LLM that can use tools (read files, run commands, edit code) in a loop until a task is done. Claude Code is an agent.</dd></div>
+          <div><dt>Harness</dt><dd>The program around the model that gives it tools, permissions and memory. Claude Code is the harness; Claude is the model.</dd></div>
+          <div><dt>CLAUDE.md</dt><dd>A Markdown file in your repo that Claude Code reads at the start of every session. Your standing instructions.</dd></div>
+          <div><dt>Skill</dt><dd>A folder with a <code>SKILL.md</code> recipe (for example "how we write specs"). Only its one-line description is loaded up front; the full text loads when needed. Cheap on tokens.</dd></div>
+          <div><dt>Subagent</dt><dd>A helper agent with its own fresh context. It does a side job (search the codebase, review a diff) and returns a short summary.</dd></div>
+          <div><dt>Hook</dt><dd>A shell command Claude Code runs automatically at a fixed moment, such as after every file edit or when the agent tries to finish. Deterministic: the model can't skip it.</dd></div>
+          <div><dt>MCP server</dt><dd>A plug-in that gives the agent extra tools (GitHub, a database, a browser). Every connected server adds tool descriptions to the context, which costs tokens.</dd></div>
+          <div><dt>CI</dt><dd>Continuous Integration. A clean machine (for example GitHub Actions) that runs your checks on every pull request.</dd></div>
+          <div><dt>Acceptance criteria</dt><dd>Testable statements of what "done" means, often in Given / When / Then form. The single most important input to a factory.</dd></div>
+        </dl>
+      </section>
+
+      <!-- 03 -->
+      <section id="what">
+        <h2><span class="no">03</span>What a software factory is</h2>
+        <p class="lede">A repeatable system where AI agents carry work from an idea to a merged pull request, with automated checks at every step and humans at the decision gates.</p>
+        <p>The word "factory" is the point. A factory is boring on purpose: same stations, same checks, every time. That repeatability is what lets you trust the output without watching every keystroke.</p>
+
+        <div class="line-scroll" role="figure" aria-label="The seven stations of the line">
+          <ol class="line">
+            <li><span class="dot"></span><span class="nm">Intake</span><span class="who">You write an issue</span></li>
+            <li class="g"><span class="dot"></span><span class="nm">Spec</span><span class="who">Agent drafts<br>You approve</span></li>
+            <li class="g"><span class="dot"></span><span class="nm">Plan</span><span class="who">Agent proposes<br>You pick options</span></li>
+            <li><span class="dot"></span><span class="nm">Build</span><span class="who">Agent codes<br>Hooks check</span></li>
+            <li><span class="dot"></span><span class="nm">Verify</span><span class="who">CI + AI reviewer</span></li>
+            <li class="g"><span class="dot"></span><span class="nm">Review &amp; merge</span><span class="who">You decide</span></li>
+            <li><span class="dot"></span><span class="nm">Learn</span><span class="who">Fix the factory,<br>not just the bug</span></li>
+          </ol>
+        </div>
+        <div class="legend"><span><i></i>Automated station</span><span><i class="g"></i>Human gate</span></div>
+
+        <h3>Two meanings you'll hear</h3>
+        <p>People use the term in two ways, and it helps to know both.</p>
+        <div class="table-scroll">
+          <table class="t-mid">
+            <thead><tr><th></th><th>"Dark factory" (extreme)</th><th>Human-gated factory (mainstream)</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Idea</strong></td><td>Specs and test scenarios drive agents; no human reads the code.</td><td>Agents do most steps; humans own specs, key decisions and merges.</td></tr>
+              <tr><td><strong>Who uses it</strong></td><td>A few teams with very strong scenario test suites (StrongDM is the usual example).</td><td>Most teams adopting agents in 2025–26.</td></tr>
+              <tr><td><strong>Risk</strong></td><td>Everything rests on the tests being complete.</td><td>Slower, but mistakes get caught by a person before merge.</td></tr>
+              <tr class="rec"><td><strong>For you</strong></td><td>Not yet.</td><td><strong>Start here.</strong> You can remove gates later once your checks earn your trust.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- 04 -->
+      <section id="good">
+        <h2><span class="no">04</span>What makes a factory good</h2>
+        <p>Six properties separate a factory that ships from one that produces confident-looking messes.</p>
+        <div class="table-scroll">
+          <table class="t-mid">
+            <thead><tr><th>Property</th><th>What it looks like</th><th>Smell when it's missing</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Clear inputs</strong></td><td>Every task has acceptance criteria before code starts.</td><td>The agent builds the wrong thing very fast.</td></tr>
+              <tr><td><strong>Small batches</strong></td><td>One issue, one branch, one PR you can review in 15 minutes.</td><td>2,000-line PRs you approve without reading.</td></tr>
+              <tr><td><strong>Verification first</strong></td><td>Fast checks run inside the agent loop; full checks run in CI; merges are blocked on red.</td><td>"It said tests pass" and they didn't.</td></tr>
+              <tr><td><strong>Gates in the right places</strong></td><td>You decide the irreversible things. The agent decides the cheap, reversible ones and tells you.</td><td>Either 40 questions a day or zero questions and a surprise schema change.</td></tr>
+              <tr><td><strong>Cheap by default</strong></td><td>Small context, right-sized model, deterministic tools for deterministic jobs.</td><td>Big bills, slow sessions, the agent "forgetting" things.</td></tr>
+              <tr><td><strong>A learning loop</strong></td><td>Each mistake becomes a new check or a rule, so it can't repeat.</td><td>The same bug class keeps coming back.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="box key">
+          <span class="label">Rule of thumb</span>
+          <p>When the agent makes a mistake, prefer adding a <strong>check</strong> (a test, a lint rule, a hook) over adding a <strong>sentence</strong> to CLAUDE.md. A check is enforced every time and costs no tokens. A sentence is a suggestion the model may miss.</p>
+        </div>
+      </section>
+
+      <!-- 05 -->
+      <section id="you">
+        <h2><span class="no">05</span>Your role: do you get to chill?</h2>
+        <p class="lede">No, but your work changes shape. You type less code and spend more time at the start (defining the task) and the end (judging the result).</p>
+        <p>Think of the agent as a fast, tireless junior engineer who never gets bored of running tests, sometimes misunderstands the brief, and will occasionally say something is done when it isn't. You wouldn't leave that person alone with production. You also wouldn't review every line they type.</p>
+
+        <h3>Who does what</h3>
+        <div class="table-scroll">
+          <table class="t-wide">
+            <thead><tr><th>Station</th><th>You</th><th>Agent</th><th>Machines (hooks, CI)</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Intake</strong></td><td>Write 2–5 lines: the problem and why it matters.</td><td>Ask clarifying questions if the goal is unclear.</td><td>Issue template enforces the fields.</td></tr>
+              <tr><td><strong>Spec</strong> <span class="chip gate">gate</span></td><td>Edit and approve acceptance criteria.</td><td>Draft the spec and criteria from your notes.</td><td>None.</td></tr>
+              <tr><td><strong>Plan</strong> <span class="chip gate">gate</span></td><td>Pick from Decision Cards on anything costly to undo.</td><td>Read the code, propose a plan, surface real choices.</td><td>None.</td></tr>
+              <tr><td><strong>Build</strong></td><td>Nothing. Do other work.</td><td>Write code and tests, fix its own failures.</td><td>Format, lint, type-check on every edit; tests before "done".</td></tr>
+              <tr><td><strong>Verify</strong></td><td>Nothing unless it's stuck.</td><td>Fix red CI on its own PR.</td><td>Full test suite, build, security scans, AI review.</td></tr>
+              <tr><td><strong>Review &amp; merge</strong> <span class="chip gate">gate</span></td><td>Read the diff against the criteria. Merge or send back.</td><td>Answer review comments, push fixes.</td><td>Branch protection blocks merge until green.</td></tr>
+              <tr><td><strong>Learn</strong></td><td>Spend 10 minutes a week on what went wrong.</td><td>Propose new checks or rules.</td><td>New checks now run forever.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>The decisions that must stay with you</h3>
+        <p>Use one test: <em>how expensive is this to undo?</em> If it's cheap, let the agent decide and tell you. If it's expensive, the agent must ask. Put this list in your CLAUDE.md:</p>
+        <ul>
+          <li>What to build and what "done" means (the spec).</li>
+          <li>Database schema and data migrations.</li>
+          <li>Public APIs, URLs and anything other people depend on.</li>
+          <li>New dependencies and new paid services.</li>
+          <li>Authentication, permissions, secrets and anything security-related.</li>
+          <li>Deleting data, force-pushing, or deploying to production.</li>
+          <li>The final merge.</li>
+        </ul>
+      </section>
+
+      <!-- 06 -->
+      <section id="options">
+        <h2><span class="no">06</span>Getting options without getting confused</h2>
+        <p class="lede">Agents tend to either decide silently or bury you in an essay of possibilities. Fix both with one fixed format: the Decision Card.</p>
+        <p>The rules of the card:</p>
+        <ul>
+          <li><strong>One question</strong>, in one line.</li>
+          <li><strong>At most three options.</strong> Recommended option first, marked clearly.</li>
+          <li><strong>Two pros and two cons each.</strong> No more. Forces the agent to pick what actually matters.</li>
+          <li><strong>Cost to undo:</strong> Low, Medium or High. This tells you how hard to think.</li>
+          <li><strong>What happens if you just say "go":</strong> the default.</li>
+        </ul>
+
+        <p>Here is what one looks like in practice:</p>
+        <div class="card" role="figure" aria-label="Example decision card">
+          <header>
+            <span class="label">Decision needed · Cost to undo: High</span>
+            <p>Where should we store user sessions for the new login flow?</p>
+          </header>
+          <div class="opts">
+            <div class="opt rec">
+              <h4>A. Postgres table <span class="chip md">recommended</span></h4>
+              <ul>
+                <li class="pro">Uses the database we already run</li>
+                <li class="pro">Easy to revoke a session</li>
+                <li class="con">One extra query per request</li>
+                <li class="con">Needs a cleanup job</li>
+              </ul>
+            </div>
+            <div class="opt">
+              <h4>B. Redis</h4>
+              <ul>
+                <li class="pro">Very fast, built-in expiry</li>
+                <li class="pro">Common industry pattern</li>
+                <li class="con">New service to run and pay for</li>
+                <li class="con">Sessions lost if it restarts without persistence</li>
+              </ul>
+            </div>
+            <div class="opt">
+              <h4>C. Signed JWT only</h4>
+              <ul>
+                <li class="pro">No storage at all</li>
+                <li class="pro">Scales without effort</li>
+                <li class="con">Hard to log a user out early</li>
+                <li class="con">Easy to get the security wrong</li>
+              </ul>
+            </div>
+          </div>
+          <footer><strong>If you say "go":</strong> I'll use A and add a migration in this PR for you to review.</footer>
+        </div>
+
+        <div class="box gate">
+          <span class="label">Keep the questions rare</span>
+          <p>Add this to CLAUDE.md: <em>"Ask me only when the answer changes what you'd do and the choice is costly to undo. Otherwise decide, and tell me in one line what you picked."</em> Without it, you either get no questions or far too many.</p>
+        </div>
+      </section>
+
+      <!-- 07 -->
+      <section id="verify">
+        <h2><span class="no">07</span>Verification: the part that matters most</h2>
+        <p class="lede">An agent saying "done" is a claim, not evidence. Verification turns claims into evidence, automatically, at several layers.</p>
+
+        <div class="box key">
+          <span class="label">Your question: is it CI, or people asking questions?</span>
+          <p><strong>Both, at different layers, for different jobs.</strong> Anything a machine can check (does it compile, do the tests pass, is there a leaked secret) is checked by a machine, first inside the agent's loop for speed and then in CI as the final word. People are asked only about things machines can't judge: is this the right thing to build, is this design sensible, is this risk acceptable. Machines verify; humans decide.</p>
+        </div>
+
+        <h3>The six layers, from fastest to final</h3>
+        <ol class="ladder">
+          <li data-l="0">
+            <h3>Testable spec <span class="chip gate">human</span></h3>
+            <p class="meta">Before any code · you + agent</p>
+            <p>Every acceptance criterion must be checkable. "Login is fast" can't be verified. "Login returns in under 300 ms for a valid user" can. If you can't write the criterion as a test, the agent can't verify it either.</p>
+          </li>
+          <li data-l="1">
+            <h3>Inside the agent loop</h3>
+            <p class="meta">Seconds · Claude Code hooks · every edit</p>
+            <p>A <code>PostToolUse</code> hook formats and lints each file right after the agent edits it. A <code>Stop</code> hook runs your fast check command when the agent tries to finish; if it fails, the hook sends the errors back and the agent keeps working. This catches most mistakes before you ever see them, and the shell commands themselves cost no tokens.</p>
+          </li>
+          <li data-l="2">
+            <h3>Pre-commit</h3>
+            <p class="meta">Seconds · git hooks · every commit</p>
+            <p>Secret scanning and formatting on commit. A cheap safety net for when hooks weren't running (for example when you edit by hand).</p>
+          </li>
+          <li data-l="3">
+            <h3>CI: the source of truth</h3>
+            <p class="meta">Minutes · GitHub Actions · every PR</p>
+            <p>A clean machine runs the full suite: build, type check, all tests, dependency audit, security scan. With branch protection's "required status checks", nothing merges while it's red. CI can't be argued with, and it doesn't share the agent's assumptions about its own environment.</p>
+          </li>
+          <li data-l="4">
+            <h3>AI reviewer</h3>
+            <p class="meta">Minutes · a second agent · on PR open</p>
+            <p>A separate agent with a fresh context reads the diff against the acceptance criteria. This is the "maker and checker" idea: the writer is too close to its own work. Treat the reviewer as advisory. It's good at logic bugs and missing edge cases, but it's still an LLM and can miss things or invent problems.</p>
+          </li>
+          <li data-l="5" class="human">
+            <h3>Your review <span class="chip gate">human</span></h3>
+            <p class="meta">Minutes · you · before merge</p>
+            <p>CI already proved it works. You check that it's <em>right</em>: matches the spec, sensible design, no scope creep, and the tests actually test the behaviour (see below). Use the short list in the checklist section.</p>
+          </li>
+          <li data-l="6">
+            <h3>After merge</h3>
+            <p class="meta">Ongoing · preview deploys, smoke tests, monitoring</p>
+            <p>For a personal setup a preview deploy and a smoke test are enough. Teams add error monitoring and one-click rollback.</p>
+          </li>
+        </ol>
+
+        <h3>The trap: the agent grading its own homework</h3>
+        <p>If the same agent writes the code <em>and</em> the tests, the tests can quietly match the bug. Three defences, in order of effort:</p>
+        <ol>
+          <li><strong>Tests from the spec first.</strong> Ask for the tests based on the acceptance criteria, check that they fail, then ask for the code. This is ordinary test-driven development, and it works well with agents.</li>
+          <li><strong>Read the test diff first in review.</strong> Deleted assertions, new <code>skip</code> markers or loosened expected values are red flags.</li>
+          <li><strong>Mutation testing</strong> (optional, later). Tools like Stryker or mutmut change your code on purpose and check the tests notice. It measures test quality, not just coverage.</li>
+        </ol>
+
+        <h3>What you can and cannot do</h3>
+        <div class="two">
+          <div class="can">
+            <h3>You can</h3>
+            <ul>
+              <li>Block merges until required CI checks pass.</li>
+              <li>Force the agent to run checks with hooks it cannot skip.</li>
+              <li>Feed failing output straight back to the agent so it fixes its own work.</li>
+              <li>Deny the agent access to files like <code>.env</code> or CI workflow files.</li>
+              <li>Add a second agent as reviewer on every PR.</li>
+              <li>Let the agent fix red CI on its own PRs.</li>
+            </ul>
+          </div>
+          <div class="cant">
+            <h3>You cannot (or shouldn't)</h3>
+            <ul>
+              <li>Trust the agent's own report that tests passed.</li>
+              <li>Treat AI review as a security gate on its own.</li>
+              <li>Verify something with no written expected behaviour.</li>
+              <li>Let the agent skip, delete or weaken tests to get green.</li>
+              <li>Give the CI agent production credentials or deploy rights.</li>
+              <li>Let untrusted people trigger the agent. Issue and PR text can carry prompt-injection attempts.</li>
+            </ul>
+          </div>
+        </div>
+
+        <h3>Industry practice in one list</h3>
+        <ul>
+          <li>Deterministic checks are the gate; LLM checks are advice.</li>
+          <li>Same checks run locally (in the loop) and in CI, from the same commands, so "works for the agent" means "works in CI".</li>
+          <li>Keep the fast check under about a minute so the agent can run it often.</li>
+          <li>Small PRs, required status checks, and at least one human approval on anything risky.</li>
+          <li>Least privilege for agents: read-only by default, narrow write access, no production secrets.</li>
+          <li>Every escaped bug becomes a regression test.</li>
+        </ul>
+      </section>
+
+      <!-- 08 -->
+      <section id="tokens">
+        <h2><span class="no">08</span>Running it without burning tokens</h2>
+        <p class="lede">Most token waste comes from context, not from the code being written. Every turn, the model re-reads everything in its context window. Keep that window small and relevant.</p>
+
+        <h3>Where tokens actually go</h3>
+        <ul>
+          <li><strong>Long sessions.</strong> The whole conversation is resent each turn. Turn 80 costs far more than turn 5.</li>
+          <li><strong>Reading too much.</strong> Dumping whole files or folders into context "just in case".</li>
+          <li><strong>Always-loaded instructions.</strong> A 1,000-line CLAUDE.md is paid for on every single request.</li>
+          <li><strong>Tool definitions.</strong> Each connected MCP server adds its tool descriptions to the context.</li>
+          <li><strong>Retry loops.</strong> Vague tasks and slow feedback make the agent try, fail and try again.</li>
+          <li><strong>The wrong model.</strong> Using the biggest model to rename a variable.</li>
+        </ul>
+
+        <h3>What to do about it</h3>
+        <div class="table-scroll">
+          <table class="t-mid">
+            <thead><tr><th>Tactic</th><th>How</th><th>Impact</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Plan before building</strong></td><td>A cheap plan you approve avoids an expensive build in the wrong direction. Use plan mode for anything non-trivial.</td><td><span class="chip hi">high</span></td></tr>
+              <tr><td><strong>One task per session</strong></td><td><code>/clear</code> between unrelated tasks. Use <code>/compact</code> when a long task fills up.</td><td><span class="chip hi">high</span></td></tr>
+              <tr><td><strong>Short CLAUDE.md</strong></td><td>Commands, rules and pointers to other docs. Aim for well under 200 lines.</td><td><span class="chip hi">high</span></td></tr>
+              <tr><td><strong>Let tools do tool jobs</strong></td><td>Formatting, linting, test runs belong in hooks and scripts, which cost zero tokens.</td><td><span class="chip hi">high</span></td></tr>
+              <tr><td><strong>Right-size the model</strong></td><td>A Haiku-class model for mechanical edits and summaries, Sonnet as the everyday default, Opus for planning and hard debugging.</td><td><span class="chip hi">high</span></td></tr>
+              <tr><td><strong>Skills over long prompts</strong></td><td>Put recipes in skills. Only the one-line description sits in context until a skill is needed.</td><td><span class="chip md">medium</span></td></tr>
+              <tr><td><strong>Subagents for searching</strong></td><td>A subagent reads 30 files and returns a 20-line summary, keeping your main context clean. They still cost tokens, so use them when the reading is large.</td><td><span class="chip md">medium</span></td></tr>
+              <tr><td><strong>Fewer MCP servers</strong></td><td>Disconnect servers you aren't using in this project.</td><td><span class="chip md">medium</span></td></tr>
+              <tr><td><strong>Throttle CI agents</strong></td><td>Run AI review when a PR opens or leaves draft, not on every push. Cap turns. Cancel superseded runs.</td><td><span class="chip md">medium</span></td></tr>
+              <tr><td><strong>Watch the meter</strong></td><td>Check <code>/cost</code> or your usage page weekly and look at which tasks were expensive.</td><td><span class="chip lo">habit</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="small">Prices change often, so this guide gives no per-token numbers. Check Anthropic's current pricing page when you size a budget.</p>
+      </section>
+
+      <!-- 09 -->
+      <section id="choose">
+        <h2><span class="no">09</span>Custom or open source?</h2>
+        <p class="lede">Build a thin custom setup on Claude Code's built-in pieces. Borrow ideas from open-source frameworks; adopt one wholesale only if it solves a pain you already feel.</p>
+
+        <div class="card" role="figure" aria-label="Decision card: which setup">
+          <header>
+            <span class="label">Decision needed · Cost to undo: Low</span>
+            <p>What should your first factory be built on?</p>
+          </header>
+          <div class="opts">
+            <div class="opt rec">
+              <h4>A. Thin custom <span class="chip md">recommended</span></h4>
+              <ul>
+                <li class="pro">You understand every piece, which you can explain in interviews</li>
+                <li class="pro">Smallest token overhead</li>
+                <li class="con">You write the templates yourself</li>
+                <li class="con">Less structure for big multi-week projects</li>
+              </ul>
+            </div>
+            <div class="opt">
+              <h4>B. Spec framework</h4>
+              <ul>
+                <li class="pro">Proven spec → plan → tasks flow</li>
+                <li class="pro">Ready-made templates and commands</li>
+                <li class="con">More files and ceremony per task</li>
+                <li class="con">Specs can drift from code</li>
+              </ul>
+            </div>
+            <div class="opt">
+              <h4>C. Hosted agent platform</h4>
+              <ul>
+                <li class="pro">Least setup</li>
+                <li class="pro">Nice dashboards</li>
+                <li class="con">You learn the product, not the craft</li>
+                <li class="con">Cost and lock-in</li>
+              </ul>
+            </div>
+          </div>
+          <footer><strong>If you say "go":</strong> start with A. It takes one evening, and nothing stops you adding OpenSpec or Spec Kit on top later.</footer>
+        </div>
+
+        <h3>The open-source options, side by side</h3>
+        <div class="table-scroll">
+          <table class="t-wide">
+            <thead><tr><th>Option</th><th>Best for</th><th>Strength</th><th>Weakness</th><th>Token weight</th></tr></thead>
+            <tbody>
+              <tr class="rec"><td><strong>Thin custom on Claude Code</strong><br><span class="small">CLAUDE.md, hooks, skills, GitHub Action</span></td><td>Solo devs, learning, most projects</td><td>Minimal, fully understood, easy to change</td><td>You design the workflow yourself</td><td><span class="chip hi">light</span></td></tr>
+              <tr><td><strong>OpenSpec</strong><br><span class="small">Fission AI, MIT</span></td><td>Changing existing codebases</td><td>Lightweight; tracks exactly what each change adds, modifies or removes</td><td>Its checks validate structure, not behaviour, so you still need tests</td><td><span class="chip hi">light</span></td></tr>
+              <tr><td><strong>Spec Kit</strong><br><span class="small">GitHub, MIT</span></td><td>New projects from scratch</td><td>Largest community; clear constitution → spec → plan → tasks flow</td><td>Heavier; specs often drift once code exists</td><td><span class="chip md">medium</span></td></tr>
+              <tr><td><strong>BMAD Method</strong></td><td>Large builds with many roles</td><td>Simulates a full team: analyst, PM, architect, dev, QA</td><td>Lots of ceremony; pays off only when coordination is already painful</td><td><span class="chip yes">heavy</span></td></tr>
+              <tr><td><strong>Autonomous agents</strong><br><span class="small">OpenHands, SWE-agent, hosted coding agents</span></td><td>Running many tickets in parallel</td><td>Issue in, PR out, little setup</td><td>Same verification problem, less control over it</td><td><span class="chip md">varies</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Standards worth borrowing, whichever route you take</h3>
+        <p>These are stable conventions, not frameworks. Adopting them costs nothing and makes your setup easier for others (and interviewers) to understand.</p>
+        <ul>
+          <li><strong>Given / When / Then</strong> for acceptance criteria (from BDD). Each line maps to one test.</li>
+          <li><strong>Architecture Decision Records</strong> (ADRs): a one-page Markdown file per big decision, in <code>docs/adr/</code>. Your accepted Decision Cards become ADRs.</li>
+          <li><strong>Conventional Commits</strong> (<code>feat:</code>, <code>fix:</code>, …) so history is readable and changelogs can be generated.</li>
+          <li><strong>AGENTS.md</strong>, the cross-tool instruction file other coding agents read. If you want tool independence, keep the rules there and have CLAUDE.md point to it.</li>
+          <li><strong>Agent Skills</strong> (the <code>SKILL.md</code> format): an open format, so your skills are portable.</li>
+          <li><strong>OWASP Top 10</strong> as the checklist your AI reviewer uses for security.</li>
+        </ul>
+      </section>
+
+      <!-- 10 -->
+      <section id="build">
+        <h2><span class="no">10</span>Build yours, step by step</h2>
+        <p class="lede">Five phases. Each one is useful on its own, so you can stop after any of them. Examples use a Node project; swap the commands for your stack.</p>
+
+        <ol class="phases">
+          <li>
+            <h3>One command that proves the code works</h3>
+            <p>Before any AI setup, make sure your repo has a single fast check command, for example <code>npm run check</code>, that runs lint, type check and unit tests in under a minute. Everything else in the factory calls this command. If it doesn't exist, ask Claude to create it; that's a good first task.</p>
+            <div class="done"><b>Done when</b><code>npm run check</code> passes on a clean clone and fails when you break something on purpose.</div>
+          </li>
+
+          <li>
+            <h3>CLAUDE.md: the factory's rulebook</h3>
+            <p>Short, specific, and focused on how you work together. Includes the Decision Card format and the "always ask me" list.</p>
+            <details>
+              <summary>Template <span class="path">CLAUDE.md</span></summary>
+              <div class="body"><div class="code"><pre># Project: &lt;name&gt;
+
+## Commands
+- Install:      npm ci
+- Fast check:   npm run check   # lint + types + unit tests, under 60s. Run after every change.
+- Full tests:   npm test
+
+## How we work
+1. Every task starts from an issue with acceptance criteria. No criteria? Ask me.
+2. Anything touching more than ~3 files: show me a plan first and wait for OK.
+3. Write tests from the acceptance criteria first, confirm they fail, then implement.
+4. One issue, one branch, one small PR.
+5. Never skip, delete or weaken a test to get green. If a test looks wrong, tell me why.
+6. "Done" means `npm run check` passes. Paste the last lines of its output.
+
+## When you need a decision from me
+Ask only when the answer changes what you'd do AND the choice is costly to undo.
+Otherwise decide, and tell me what you picked in one line.
+
+Format (Decision Card):
+- One-line question + cost to undo (Low/Med/High)
+- At most 3 options, recommended first
+- Each option: 2 pros, 2 cons
+- What you'll do if I just say "go"
+
+Always ask before: new dependencies, DB schema changes, public API changes,
+auth/security code, deleting data, anything that costs money.
+
+## Read only when relevant
+- Architecture: docs/architecture.md
+- Past decisions: docs/adr/</pre></div></div>
+            </details>
+            <div class="done"><b>Done when</b>a new session can tell you the check command and the "always ask" list without you repeating them.</div>
+          </li>
+
+          <li>
+            <h3>Hooks: verification inside the loop</h3>
+            <p>Three things: format each edited file, block reads of secrets and edits to CI config, and refuse to let the agent finish while checks fail.</p>
+            <details>
+              <summary>Settings <span class="path">.claude/settings.json</span></summary>
+              <div class="body"><div class="code"><pre>{
+  "permissions": {
+    "deny": [
+      "Read(./.env)",
+      "Read(./.env.*)",
+      "Edit(./.github/workflows/**)"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          { "type": "command",
+            "command": "jq -r '.tool_input.file_path' | xargs -r npx prettier --write --log-level silent" }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          { "type": "command", "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/verify.sh" }
+        ]
+      }
+    ]
+  }
+}</pre></div></div>
+            </details>
+            <details>
+              <summary>Stop hook <span class="path">.claude/hooks/verify.sh</span></summary>
+              <div class="body">
+                <p class="small">Exit code 2 tells Claude Code "not done yet" and sends the message on stderr back to the agent. Make the file executable with <code>chmod +x</code>.</p>
+                <div class="code"><pre>#!/usr/bin/env bash
+# Runs when the agent tries to finish. Blocks it while the fast check fails.
+input=$(cat)
+
+# Already sent back once this turn? Let it stop. CI is the final gate.
+[ "$(echo "$input" | jq -r '.stop_hook_active')" = "true" ] &amp;&amp; exit 0
+
+# No uncommitted edits and no commits ahead of main (just a chat answer)? Skip.
+if git diff --quiet HEAD 2&gt;/dev/null &amp;&amp; [ -z "$(git log --oneline main..HEAD 2&gt;/dev/null)" ]; then
+  exit 0
+fi
+
+if ! npm run check --silent &gt; /tmp/check.log 2&gt;&amp;1; then
+  echo "Checks are failing. Fix them before finishing. Last output:" &gt;&amp;2
+  tail -n 30 /tmp/check.log &gt;&amp;2
+  exit 2
+fi
+exit 0</pre></div>
+              </div>
+            </details>
+            <div class="done"><b>Done when</b>you ask the agent to break a test on purpose and it can't finish until it fixes it.</div>
+          </li>
+
+          <li>
+            <h3>CI gate and AI reviewer</h3>
+            <p>Two workflows: one deterministic gate that must pass, one AI reviewer that comments. Then turn on branch protection for <code>main</code> with the <code>check</code> job as a required status check, and turn on GitHub secret scanning with push protection.</p>
+            <details>
+              <summary>Deterministic gate <span class="path">.github/workflows/ci.yml</span></summary>
+              <div class="body"><div class="code"><pre>name: ci
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true   # don't pay for runs a newer push replaced
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci
+      - run: npm run check          # same command the agent runs locally
+      - run: npm test -- --coverage
+      - run: npm audit --audit-level=high</pre></div></div>
+            </details>
+            <details>
+              <summary>AI reviewer <span class="path">.github/workflows/ai-review.yml</span></summary>
+              <div class="body">
+                <p class="small">Uses Anthropic's official <code>claude-code-action</code>. Add <code>ANTHROPIC_API_KEY</code> as a repository secret. Input names change between versions, and the reviewer needs permission to post comments, so copy the tool settings from the code-review example in the action's README.</p>
+                <div class="code"><pre>name: ai-review
+on:
+  pull_request:
+    types: [opened, ready_for_review]   # not on every push: saves tokens
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  review:
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: |
+            Review this PR against the acceptance criteria in the linked issue.
+            Report only: real bugs, security problems (OWASP Top 10), missing or
+            weakened tests. At most 5 findings, most severe first. No style nits.
+          claude_args: "--max-turns 8"</pre></div>
+              </div>
+            </details>
+            <div class="done"><b>Done when</b>a PR with a failing test cannot be merged, and a new PR gets a short AI review comment.</div>
+          </li>
+
+          <li>
+            <h3>Workflow skills and the learning loop</h3>
+            <p>Turn the stations into commands you can call: <code>/spec</code> drafts acceptance criteria from your notes, <code>/plan</code> produces a plan plus Decision Cards, <code>/ship</code> builds, runs checks and opens the PR. Add an issue template so every task starts with criteria. Then once a week, spend ten minutes asking: what went wrong, and which check would have caught it?</p>
+            <details>
+              <summary>Example skill <span class="path">.claude/skills/spec/SKILL.md</span></summary>
+              <div class="body"><div class="code"><pre>---
+name: spec
+description: Turn rough notes or an issue into a short spec with testable acceptance criteria. Use before planning or coding any feature.
+---
+
+1. Read the issue or notes. Ask at most 3 clarifying questions, only if the goal is unclear.
+2. Write the spec in this shape:
+
+   ## Problem        (2-3 sentences, user's point of view)
+   ## Acceptance criteria
+   - [ ] Given ..., when ..., then ...     (each one testable)
+   ## Out of scope
+   ## Risk: low / medium / high, and why
+
+3. Stop and wait for approval. Do not plan or write code yet.</pre></div></div>
+            </details>
+            <details>
+              <summary>Issue template <span class="path">.github/ISSUE_TEMPLATE/task.md</span></summary>
+              <div class="body"><div class="code"><pre>---
+name: Task
+about: Work for the factory
+---
+## Problem
+## Acceptance criteria
+- [ ] Given ..., when ..., then ...
+## Out of scope
+## Risk: low / medium / high</pre></div></div>
+            </details>
+            <div class="done"><b>Done when</b>a task goes from issue to merged PR using only your three gate decisions, and your first weekly review adds at least one new check.</div>
+          </li>
+        </ol>
+
+        <div class="box ok">
+          <span class="label">A normal day once it's running</span>
+          <p>Morning: write two or three short issues, run <code>/spec</code> on each, fix the criteria. Approve plans and answer any Decision Cards. Let the agent build while you study or do other work. Afternoon: review the PRs that are green, merge or send back. Friday: ten-minute retro.</p>
+        </div>
+      </section>
+
+      <!-- 11 -->
+      <section id="interview">
+        <h2><span class="no">11</span>Interview angle</h2>
+        <p>Teams now ask how candidates work with AI agents. Building this setup gives you concrete answers. Three you can use almost word for word:</p>
+        <div class="box key">
+          <span class="label">"How do you make sure AI-written code is correct?"</span>
+          <p>"I don't trust the agent's report. Deterministic checks run inside the agent's loop through hooks, and the same command runs again in CI, which is a required check for merging. A second agent reviews the diff as advice, and I review the tests first, because the main risk is tests that match the bug."</p>
+        </div>
+        <div class="box key">
+          <span class="label">"Where do you stay involved?"</span>
+          <p>"At decisions that are expensive to undo: the spec, schema and API changes, new dependencies, security, and the merge. The agent brings me a short Decision Card with up to three options. Cheap, reversible choices it makes itself and tells me."</p>
+        </div>
+        <div class="box key">
+          <span class="label">"How do you control cost?"</span>
+          <p>"Mostly through context: short standing instructions, one task per session, subagents for big searches, deterministic tools for formatting and tests, and the smallest model that does the job."</p>
+        </div>
+      </section>
+
+      <!-- 12 -->
+      <section id="checklist">
+        <h2><span class="no">12</span>Checklist</h2>
+        <h3>Setup</h3>
+        <ul class="checklist">
+          <li>A fast check command that runs in under a minute.</li>
+          <li>CLAUDE.md under 200 lines, with the Decision Card format and the "always ask" list.</li>
+          <li>Hooks: format on edit, deny secrets and CI files, Stop hook runs the check.</li>
+          <li>CI workflow running the same check command, set as a required status check.</li>
+          <li>Secret scanning and push protection turned on.</li>
+          <li>AI reviewer on PR open, capped turns.</li>
+          <li>Issue template with acceptance criteria.</li>
+        </ul>
+        <h3>Your 5-minute PR review</h3>
+        <ul class="checklist">
+          <li>CI is green. If not, don't start reading.</li>
+          <li>Read the test changes first. Anything deleted, skipped or loosened?</li>
+          <li>Does each acceptance criterion have a test?</li>
+          <li>Anything outside the issue's scope? Send it back.</li>
+          <li>Anything from the "always ask" list that wasn't asked about?</li>
+          <li>Would you understand this code in six months?</li>
+        </ul>
+      </section>
+
+      <footer class="end">
+        <h3>Sources and further reading</h3>
+        <ol>
+          <li><a href="https://docs.anthropic.com/en/docs/claude-code/hooks-guide">Claude Code hooks guide</a> (Anthropic)</li>
+          <li><a href="https://github.com/anthropics/claude-code-action">claude-code-action</a> (Anthropic, GitHub)</li>
+          <li><a href="https://github.com/github/spec-kit">Spec Kit</a> (GitHub)</li>
+          <li><a href="https://github.com/Fission-AI/OpenSpec">OpenSpec</a> (Fission AI)</li>
+          <li><a href="https://github.com/bmad-code-org/BMAD-METHOD">BMAD Method</a></li>
+          <li><a href="https://developertoolkit.ai/en/ecosystem/frameworks/spec-driven-frameworks/">Spec-driven frameworks compared: Spec Kit, OpenSpec, BMAD, Superpowers</a></li>
+          <li><a href="https://codemyspec.com/blog/openspec-vs-spec-kit">OpenSpec vs Spec Kit</a></li>
+          <li><a href="https://www.explainthis.io/en/ai/software-factory">What is a software factory?</a></li>
+          <li><a href="https://getunblocked.com/blog/what-is-an-ai-software-factory-buyers-guide/">What is an AI software factory? A buyer's guide (2026)</a></li>
+        </ol>
+        <p class="small">Framework details (versions, features) move quickly. Check each project's README before adopting it.</p>
+      </footer>
+    </main>
+  </div>
+</div>
+
+<script>
+  document.querySelectorAll('.code').forEach(function (wrap) {
+    var pre = wrap.querySelector('pre');
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'copy';
+    btn.textContent = 'Copy';
+    btn.addEventListener('click', function () {
+      var text = pre.innerText;
+      var done = function () { btn.textContent = 'Copied'; setTimeout(function () { btn.textContent = 'Copy'; }, 1500); };
+      try {
+        navigator.clipboard.writeText(text).then(done, function () { selectPre(pre); });
+      } catch (e) { selectPre(pre); }
+    });
+    wrap.appendChild(btn);
+  });
+  function selectPre(pre) {
+    var r = document.createRange(); r.selectNodeContents(pre);
+    var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+  }
+</script>
+
+</html>
