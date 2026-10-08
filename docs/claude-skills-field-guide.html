@@ -1,0 +1,984 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>
+html { color-scheme: light; }
+body { margin: 0; -webkit-font-smoothing: antialiased; }
+img { max-width: 100%; }
+[hidden] { display: none !important; }
+</style>
+<title>Claude Skills Field Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@500;700;800&family=Literata:opsz,wght@7..72,400;7..72,600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: a field manual. Sticky chapter rail on wide screens, one reading column, "key idea" plates opening each chapter. */
+:root {
+  --bg: #f3f6f7;
+  --surface: #ffffff;
+  --ink: #17232b;
+  --muted: #55656f;
+  --rule: #d5dee2;
+  --accent: #1f5f8b;
+  --accent-soft: #e2eef6;
+  --amber: #9a5b00;
+  --amber-soft: #fbf0dc;
+  --good: #2c6e49;
+  --good-soft: #e3f1e8;
+  --code-bg: #eaf0f2;
+  --font-display: "Schibsted Grotesk", "Helvetica Neue", Arial, sans-serif;
+  --font-body: "Literata", Georgia, "Times New Roman", serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --step--1: 0.85rem;
+  --step-0: 1.02rem;
+  --step-1: 1.25rem;
+  --step-2: 1.6rem;
+  --step-3: 2.3rem;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #11171b; --surface: #182128; --ink: #e4ebee; --muted: #9aaab3; --rule: #2c3a43;
+    --accent: #79b8e3; --accent-soft: #1c3243; --amber: #e8b062; --amber-soft: #3a2c16;
+    --good: #7cc79d; --good-soft: #1b3326; --code-bg: #0d1316; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #11171b; --surface: #182128; --ink: #e4ebee; --muted: #9aaab3; --rule: #2c3a43;
+  --accent: #79b8e3; --accent-soft: #1c3243; --amber: #e8b062; --amber-soft: #3a2c16;
+  --good: #7cc79d; --good-soft: #1b3326; --code-bg: #0d1316; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: var(--step-0); line-height: 1.65; }
+.wrap { max-width: 1180px; margin: 0 auto; padding-inline: 20px; padding-block: 32px 80px; display: grid; grid-template-columns: 230px minmax(0, 1fr); gap: 48px; }
+@media (max-width: 900px) { .wrap { grid-template-columns: minmax(0, 1fr); gap: 24px; padding-inline: 16px; } }
+
+nav.rail { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 24px); align-self: start; font-family: var(--font-display); font-size: 0.9rem; }
+nav.rail .label { text-transform: uppercase; letter-spacing: 0.1em; font-size: 0.72rem; color: var(--muted); font-weight: 700; margin-bottom: 10px; }
+nav.rail ol { list-style: none; padding: 0; margin: 0; display: grid; gap: 2px; counter-reset: ch; }
+nav.rail li { counter-increment: ch; }
+nav.rail a { display: flex; gap: 10px; padding: 5px 8px; border-radius: 6px; color: var(--ink); text-decoration: none; }
+nav.rail a::before { content: counter(ch, decimal-leading-zero); font-family: var(--font-mono); font-size: 0.75rem; color: var(--muted); padding-top: 2px; }
+nav.rail a:hover, nav.rail a:focus-visible { background: var(--accent-soft); outline: none; }
+@media (max-width: 900px) {
+  nav.rail { position: static; background: var(--surface); border: 1px solid var(--rule); border-radius: 10px; padding: 14px; }
+  nav.rail ol { grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); }
+}
+
+main { min-width: 0; }
+header.top { padding-bottom: 28px; border-bottom: 2px solid var(--ink); margin-bottom: 8px; }
+.eyebrow { font-family: var(--font-display); text-transform: uppercase; letter-spacing: 0.12em; font-size: 0.75rem; font-weight: 700; color: var(--accent); }
+h1 { font-family: var(--font-display); font-weight: 800; font-size: clamp(2rem, 5vw, 3.2rem); line-height: 1.05; letter-spacing: -0.02em; margin: 8px 0 14px; text-wrap: balance; }
+.lede { font-size: var(--step-1); max-width: 62ch; color: var(--ink); margin: 0; }
+.meta { margin-top: 14px; font-family: var(--font-display); font-size: var(--step--1); color: var(--muted); }
+
+section { padding-block: 40px 8px; border-bottom: 1px solid var(--rule); scroll-margin-top: 16px; }
+section:last-of-type { border-bottom: 0; }
+h2 { font-family: var(--font-display); font-weight: 800; font-size: var(--step-3); line-height: 1.1; letter-spacing: -0.015em; margin: 4px 0 16px; text-wrap: balance; }
+h3 { font-family: var(--font-display); font-weight: 700; font-size: var(--step-1); margin: 30px 0 8px; text-wrap: balance; }
+h4 { font-family: var(--font-display); font-weight: 700; font-size: 1rem; margin: 18px 0 4px; }
+p, li { max-width: 68ch; }
+.chap { font-family: var(--font-mono); font-size: 0.8rem; color: var(--muted); }
+a { color: var(--accent); }
+code { font-family: var(--font-mono); font-size: 0.86em; background: var(--code-bg); padding: 1px 5px; border-radius: 4px; }
+
+.key { background: var(--accent-soft); border-left: 4px solid var(--accent); padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 4px 0 20px; max-width: 72ch; }
+.key b:first-child { font-family: var(--font-display); text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.72rem; color: var(--accent); display: block; margin-bottom: 2px; }
+.warn { background: var(--amber-soft); border-left: 4px solid var(--amber); padding: 12px 18px; border-radius: 0 8px 8px 0; margin: 18px 0; max-width: 72ch; }
+.warn b:first-child { color: var(--amber); font-family: var(--font-display); }
+.tip { background: var(--good-soft); border-left: 4px solid var(--good); padding: 12px 18px; border-radius: 0 8px 8px 0; margin: 18px 0; max-width: 72ch; }
+.tip b:first-child { color: var(--good); font-family: var(--font-display); }
+
+.codebox { position: relative; margin: 14px 0 20px; }
+.codebox .cap { font-family: var(--font-mono); font-size: 0.75rem; color: var(--muted); margin-bottom: 4px; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.codebox button { font-family: var(--font-display); font-size: 0.75rem; border: 1px solid var(--rule); background: var(--surface); color: var(--ink); border-radius: 6px; padding: 3px 10px; cursor: pointer; }
+.codebox button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+pre.code { margin: 0; background: var(--code-bg); border: 1px solid var(--rule); border-radius: 8px; padding: 14px 16px; overflow-x: auto; font-family: var(--font-mono); font-size: 0.82rem; line-height: 1.55; color: var(--ink); }
+pre.code .c { color: var(--muted); }
+pre.code .k { color: var(--accent); font-weight: 600; }
+
+.tablewrap { overflow-x: auto; margin: 14px 0 22px; border: 1px solid var(--rule); border-radius: 8px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 0.92rem; }
+th, td { text-align: left; vertical-align: top; padding: 10px 12px; border-bottom: 1px solid var(--rule); }
+th { font-family: var(--font-display); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); background: var(--bg); }
+tr:last-child td { border-bottom: 0; }
+td code { white-space: nowrap; }
+
+.levels { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 18px 0 24px; }
+@media (max-width: 700px) { .levels { grid-template-columns: minmax(0, 1fr); } }
+.level { background: var(--surface); border: 1px solid var(--rule); border-radius: 10px; padding: 14px 16px; }
+.level .n { font-family: var(--font-mono); font-size: 0.75rem; color: var(--accent); font-weight: 600; }
+.level h4 { margin: 4px 0 6px; }
+.level p { margin: 0; font-size: 0.92rem; }
+.level .cost { margin-top: 10px; font-family: var(--font-mono); font-size: 0.75rem; color: var(--muted); }
+.bar { height: 6px; border-radius: 3px; background: var(--accent); margin-top: 6px; opacity: 0.85; }
+
+.patterns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin: 18px 0; }
+@media (max-width: 760px) { .patterns { grid-template-columns: minmax(0, 1fr); } }
+.pattern { background: var(--surface); border: 1px solid var(--rule); border-radius: 10px; padding: 14px 16px; min-width: 0; }
+.pattern h4 { margin: 0 0 4px; }
+.pattern p { margin: 0 0 6px; font-size: 0.93rem; }
+.pattern .use { font-family: var(--font-display); font-size: 0.8rem; color: var(--muted); }
+.pattern h4 { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; }
+.tag { font-family: var(--font-display); font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; padding: 2px 7px; border-radius: 999px; white-space: nowrap; }
+.tag.pub { background: var(--good-soft); color: var(--good); }
+.tag.app { background: var(--amber-soft); color: var(--amber); }
+.src-note { font-size: 0.92rem; color: var(--muted); }
+.pattern .use b { color: var(--ink); }
+
+.diagram { background: var(--surface); border: 1px solid var(--rule); border-radius: 10px; padding: 12px; margin: 14px 0 20px; overflow-x: auto; }
+.diagram pre.mermaid { margin: 0; background: transparent; text-align: center; }
+.diagram .dcap { font-family: var(--font-display); font-size: 0.8rem; color: var(--muted); margin-top: 6px; }
+
+.yesno { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 14px 0; }
+@media (max-width: 640px) { .yesno { grid-template-columns: minmax(0, 1fr); } }
+.yesno > div { border-radius: 8px; padding: 12px 14px; border: 1px solid var(--rule); background: var(--surface); min-width: 0; }
+.yesno .lbl { font-family: var(--font-display); font-weight: 700; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.06em; }
+.yesno .bad .lbl { color: var(--amber); }
+.yesno .ok .lbl { color: var(--good); }
+.yesno code { white-space: normal; }
+
+ul.check { list-style: none; padding-left: 0; }
+ul.check li { padding-left: 28px; position: relative; margin-bottom: 6px; }
+ul.check li::before { content: ""; position: absolute; left: 2px; top: 6px; width: 14px; height: 14px; border: 2px solid var(--accent); border-radius: 3px; }
+
+.path { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 22px 0 6px; }
+@media (max-width: 700px) { .path { grid-template-columns: minmax(0, 1fr); } }
+.path div { background: var(--surface); border: 1px solid var(--rule); border-radius: 10px; padding: 12px 14px; font-size: 0.92rem; }
+.path b { font-family: var(--font-display); display: block; margin-bottom: 2px; }
+
+dl.gloss { display: grid; grid-template-columns: minmax(140px, 220px) minmax(0, 1fr); gap: 8px 18px; }
+dl.gloss dt { font-family: var(--font-display); font-weight: 700; }
+dl.gloss dd { margin: 0; }
+@media (max-width: 600px) { dl.gloss { grid-template-columns: minmax(0, 1fr); } dl.gloss dd { margin-bottom: 8px; } }
+
+.qa { background: var(--surface); border: 1px solid var(--rule); border-radius: 10px; padding: 4px 16px; margin: 10px 0; }
+.qa summary { cursor: pointer; font-family: var(--font-display); font-weight: 700; padding: 10px 0; }
+.qa summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.qa p { margin-top: 0; }
+footer { margin-top: 40px; font-family: var(--font-display); font-size: var(--step--1); color: var(--muted); }
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+html { scroll-behavior: smooth; }
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav class="rail" aria-label="Chapters">
+  <div class="label">Chapters</div>
+  <ol>
+    <li><a href="#start">Start here</a></li>
+    <li><a href="#loading">How a skill loads</a></li>
+    <li><a href="#anatomy">Anatomy of a skill</a></li>
+    <li><a href="#where">Where skills run</a></li>
+    <li><a href="#writing">Writing well</a></li>
+    <li><a href="#patterns">Pattern catalog</a></li>
+    <li><a href="#exemplars">Exemplar skills</a></li>
+    <li><a href="#compose">Chaining &amp; parallel</a></li>
+    <li><a href="#compare">Skill vs the rest</a></li>
+    <li><a href="#testing">Testing &amp; iteration</a></li>
+    <li><a href="#example">Worked example</a></li>
+    <li><a href="#safety">Safety &amp; sharing</a></li>
+    <li><a href="#interview">Interview angle</a></li>
+    <li><a href="#checklist">Checklist &amp; glossary</a></li>
+  </ol>
+</nav>
+
+<main>
+<header class="top">
+  <div class="eyebrow">Field guide · Agent Skills for Claude</div>
+  <h1>Building custom skills for Claude</h1>
+  <p class="lede">What a skill is, how Claude loads it, how to write one that triggers reliably and works the same way every time, and how to connect skills into sequential and parallel workflows.</p>
+  <div class="meta">Based on Anthropic's current Skills documentation (Claude Code and the Claude Developer Platform) and Anthropic's own published example skills. October 2026.</div>
+
+  <div class="path" aria-label="Suggested reading paths">
+    <div><b>10-minute read</b>Chapters 1, 2, 3. You will understand what a skill is and be able to write a basic one.</div>
+    <div><b>Your composition question</b>Chapter 8 answers "can one skill hand over to another" and covers parallel execution.</div>
+    <div><b>Learn from real skills</b>Chapter 7 lists strong published skills by category and what to study in each.</div>
+    <div><b>Before an interview</b>Chapters 9 and 13. How skills compare to MCP, subagents and CLAUDE.md, and how to explain that out loud.</div>
+  </div>
+</header>
+
+<!-- 1 -->
+<section id="start">
+  <div class="chap">Chapter 01</div>
+  <h2>Start here: the mental model</h2>
+  <div class="key"><b>Key idea</b>A skill is a folder of instructions and helper files that Claude reads <em>only when the current task needs it</em>. Think of it as the onboarding binder you hand a capable new hire: they already know how to work, but not your company's way of doing this one job.</div>
+
+  <p>You already know how to write a good prompt. A skill is a reusable, packaged prompt with three extra properties:</p>
+  <ol>
+    <li><strong>It loads on demand.</strong> Claude sees a one-line summary of every installed skill. It opens the full instructions only when a task matches. You can install dozens of skills without filling up Claude's context window.</li>
+    <li><strong>It can carry files.</strong> Reference docs, templates and runnable scripts live next to the instructions. Claude reads or runs them when a step calls for it.</li>
+    <li><strong>It is portable.</strong> The same folder works in Claude Code, in the Claude apps (claude.ai and desktop), through the API and in the Agent SDK, with small differences covered in Chapter 4.</li>
+  </ol>
+
+  <p>One fact matters most for the rest of this guide: <strong>a skill is not code that executes itself. Claude is the runtime.</strong> A skill only describes what Claude should do. Claude reads it and decides what to do next. Everything about triggering, handoffs and parallelism follows from this. A skill "calls" another skill only in the sense that its text tells Claude to go and load that other skill.</p>
+</section>
+
+<!-- 2 -->
+<section id="loading">
+  <div class="chap">Chapter 02</div>
+  <h2>How a skill loads: progressive disclosure</h2>
+  <div class="key"><b>Key idea</b>Skills load in three layers. Each layer is read only if the previous one indicated that it is needed. This is why skill design is mostly about deciding <em>what goes in which layer</em>.</div>
+
+  <div class="levels">
+    <div class="level">
+      <div class="n">LEVEL 1 · ALWAYS LOADED</div>
+      <h4>Name + description</h4>
+      <p>From the YAML frontmatter. Sits in the system prompt for every request so Claude knows the skill exists and when it applies.</p>
+      <div class="cost">≈ 100 tokens per skill</div><div class="bar" style="width:12%"></div>
+    </div>
+    <div class="level">
+      <div class="n">LEVEL 2 · ON TRIGGER</div>
+      <h4>SKILL.md body</h4>
+      <p>The main instructions. Loaded when Claude decides the task matches the description.</p>
+      <div class="cost">aim for &lt; 500 lines (a few thousand tokens)</div><div class="bar" style="width:45%"></div>
+    </div>
+    <div class="level">
+      <div class="n">LEVEL 3 · AS NEEDED</div>
+      <h4>Bundled files</h4>
+      <p>Reference docs are read only when a step needs them. Scripts are <em>run</em>, so only their output enters context, not their source code.</p>
+      <div class="cost">effectively unlimited</div><div class="bar" style="width:100%"></div>
+    </div>
+  </div>
+
+  <div class="diagram">
+<pre class="mermaid">
+sequenceDiagram
+    participant U as You
+    participant C as Claude
+    participant FS as Skill folder
+    Note over C: System prompt already lists every skill's name and description
+    U->>C: "Tailor my resume for this job post"
+    C->>C: Description of tailoring-resume matches
+    C->>FS: Read SKILL.md
+    FS-->>C: Workflow steps
+    C->>FS: Read references/ats-rules.md (step 2 asks for it)
+    C->>FS: Run scripts/keyword_gap.py job.txt resume.md
+    FS-->>C: Script output only (source never loaded)
+    C-->>U: Tailored resume + gap report
+</pre>
+    <div class="dcap">One request moving through the three layers. Nothing in the folder costs tokens until Claude opens it.</div>
+  </div>
+
+  <h3>What this means when you design a skill</h3>
+  <ul>
+    <li><strong>The description does the triggering.</strong> Claude chooses skills based only on the name and description. If the "when to use" information is in the body instead, Claude never sees it at the moment it is deciding.</li>
+    <li><strong>The body should be a map, not a manual.</strong> Put the workflow in SKILL.md and move detailed material into separate files that Claude opens only when a step needs them.</li>
+    <li><strong>Scripts cost almost nothing.</strong> A 600-line validator costs zero context tokens if Claude only runs it. That is a strong reason to turn fragile steps into scripts.</li>
+    <li><strong>Simple tasks may not trigger skills.</strong> Claude consults a skill when the task would benefit from it. A one-step request like "read this PDF" may be handled directly even when a PDF skill exists.</li>
+  </ul>
+</section>
+
+<!-- 3 -->
+<section id="anatomy">
+  <div class="chap">Chapter 03</div>
+  <h2>Anatomy of a skill</h2>
+  <div class="key"><b>Key idea</b>The only required file is <code>SKILL.md</code>: YAML frontmatter (metadata) on top, Markdown instructions below. Everything else is optional and earns its place.</div>
+
+  <div class="codebox">
+    <div class="cap"><span>Folder layout</span><button type="button" data-copy="tree1">Copy</button></div>
+<pre class="code" id="tree1">tailoring-resume/
+├── SKILL.md              <span class="c"># required: frontmatter + workflow</span>
+├── references/           <span class="c"># read into context only when needed</span>
+│   ├── ats-rules.md
+│   └── bullet-style.md
+├── scripts/              <span class="c"># executed; only output enters context</span>
+│   └── keyword_gap.py
+└── assets/               <span class="c"># used in output, rarely read</span>
+    └── resume-template.md</pre>
+  </div>
+
+  <div class="codebox">
+    <div class="cap"><span>SKILL.md</span><button type="button" data-copy="skill1">Copy</button></div>
+<pre class="code" id="skill1"><span class="k">---</span>
+<span class="k">name:</span> tailoring-resume
+<span class="k">description:</span> Tailors a resume to a specific job posting by matching keywords,
+  reordering experience, and rewriting bullets in a results-first style. Use when
+  the user shares a job description, JD, posting or role link and wants their
+  resume or CV adapted, even if they only say "make this fit".
+<span class="k">---</span>
+
+# Tailoring a resume
+
+## Workflow
+Copy this checklist into your reply and tick items off as you go:
+- [ ] 1. Extract requirements from the posting
+- [ ] 2. Run the keyword gap check
+- [ ] 3. Rewrite bullets
+- [ ] 4. Validate against ATS rules
+
+**Step 2.** Run `python scripts/keyword_gap.py job.txt resume.md`.
+Treat any keyword it marks MISSING as a candidate, not an obligation: add it only
+if the user's real experience supports it. Never invent experience.
+
+**Step 3.** Follow `references/bullet-style.md` for bullet format.
+
+**Step 4.** Check the draft against `references/ats-rules.md`. If any rule
+fails, fix it and check again before showing the result.
+
+## Output
+Return the tailored resume using `assets/resume-template.md`, then a short
+"What changed and why" list.</pre>
+  </div>
+
+  <h3>Frontmatter fields</h3>
+  <p>The fields fall into two groups. The <strong>portable</strong> ones work on every surface. Claude Code adds <strong>extensions</strong> that control invocation and execution.</p>
+
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Field</th><th>Where</th><th>What it does</th></tr></thead>
+    <tbody>
+      <tr><td><code>name</code></td><td>All</td><td>Identifier. Max 64 chars, lowercase letters, digits and hyphens only. Cannot contain "anthropic" or "claude". In Claude Code it is also the <code>/command</code> name (defaults to the folder name).</td></tr>
+      <tr><td><code>description</code></td><td>All</td><td>What the skill does <em>and</em> when to use it. Max 1,024 chars on the API and claude.ai. This is the trigger.</td></tr>
+      <tr><td><code>allowed-tools</code></td><td>All</td><td>Tools Claude may use without asking while the skill runs, e.g. <code>Bash(git *)</code>.</td></tr>
+      <tr><td><code>license</code>, <code>compatibility</code>, <code>metadata</code></td><td>All</td><td>Informational. <code>compatibility</code> is where you note required tools or packages.</td></tr>
+      <tr><td><code>when_to_use</code></td><td>Claude Code</td><td>Extra trigger phrases appended to the description. Combined listing is cut at 1,536 chars, so put the main use case first.</td></tr>
+      <tr><td><code>disable-model-invocation</code></td><td>Claude Code</td><td><code>true</code> means only you can run it (via <code>/name</code>). Use for actions with side effects: deploy, send, publish.</td></tr>
+      <tr><td><code>user-invocable</code></td><td>Claude Code</td><td><code>false</code> hides it from the <code>/</code> menu, so only Claude loads it. Good for background knowledge skills.</td></tr>
+      <tr><td><code>argument-hint</code>, <code>arguments</code></td><td>Claude Code</td><td>Arguments for <code>/name arg1 arg2</code>, substituted as <code>$ARGUMENTS</code>, <code>$0</code>, <code>$1</code> or named <code>$vars</code>.</td></tr>
+      <tr><td><code>context: fork</code> + <code>agent</code></td><td>Claude Code</td><td>Runs the skill in a separate <strong>subagent</strong> (e.g. <code>Explore</code>, <code>Plan</code>, or your own agent). Key for parallel work, see Chapter 8.</td></tr>
+      <tr><td><code>model</code>, <code>effort</code></td><td>Claude Code</td><td>Override model or reasoning effort for that turn.</td></tr>
+      <tr><td><code>disallowed-tools</code>, <code>hooks</code>, <code>paths</code>, <code>shell</code></td><td>Claude Code</td><td>Remove tools, register hooks, only auto-activate for matching file globs, choose bash or PowerShell.</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="warn"><b>Portability trap.</b> On claude.ai and the Skills API, only <code>name</code>, <code>description</code>, <code>license</code>, <code>compatibility</code>, <code>metadata</code> and <code>allowed-tools</code> are accepted. Any other key is a hard error. If you want one skill to work on every surface, use only those fields.</div>
+
+  <h3>Two Claude Code power features</h3>
+  <h4>Arguments</h4>
+  <div class="codebox">
+<pre class="code"><span class="k">---</span>
+<span class="k">name:</span> mock-interview
+<span class="k">argument-hint:</span> [role] [company]
+<span class="k">disable-model-invocation:</span> true
+<span class="k">---</span>
+Run a mock interview for the $0 role at $1. Ask one question at a time...</pre>
+  </div>
+  <p>Typing <code>/mock-interview backend-engineer Stripe</code> fills in <code>$0</code> and <code>$1</code>.</p>
+
+  <h4>Dynamic context injection</h4>
+  <p>A line like <code>!`git diff --stat`</code> runs a shell command <em>before</em> Claude reads the skill and replaces the line with the command's output. The skill then starts with fresh, real data in front of it. If the command fails, the whole invocation is aborted, so add <code>|| true</code> to commands that are allowed to fail.</p>
+</section>
+
+<!-- 4 -->
+<section id="where">
+  <div class="chap">Chapter 04</div>
+  <h2>Where skills live and run</h2>
+  <div class="key"><b>Key idea</b>The folder format is the same everywhere. What changes is where you put it and what the runtime around it can do, such as network access and installing packages.</div>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Surface</th><th>How you install</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td>Claude Code</td><td><code>~/.claude/skills/&lt;name&gt;/</code> (personal)<br><code>.claude/skills/&lt;name&gt;/</code> (project, commit it)<br>plugins: <code>/plugin-name:skill</code></td><td>Precedence when names clash: enterprise &gt; personal &gt; project. Full frontmatter set. Old <code>.claude/commands/*.md</code> files still work and are now treated as simple skills.</td></tr>
+      <tr><td>Claude apps (claude.ai, desktop)</td><td>Upload a zip in Settings → Capabilities / Skills</td><td>Runs in the code execution sandbox. Can install packages from npm and PyPI.</td></tr>
+      <tr><td>Claude API</td><td>Upload via the Skills API, then attach to a request's container along with the code execution tool</td><td>No network access and no runtime installs. Bundle what you need. Check the docs for the current beta headers.</td></tr>
+      <tr><td>Agent SDK</td><td>Same folders as Claude Code, enabled through the SDK's setting sources</td><td>Lets your own agent product use skills.</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3 id="claudemd">Do skills need to be referenced in CLAUDE.md?</h3>
+  <div class="key"><b>Short answer</b>No. Claude Code finds skills automatically when they are in a skills folder (personal, project, nested or plugin). Each skill's name and description are already shown to Claude every session, so listing them in CLAUDE.md adds nothing for discovery.</div>
+  <p>CLAUDE.md is loaded <em>in full</em> every session, while a skill is loaded only when needed. If you copy a skill's content into CLAUDE.md, you pay for it on every request and end up with two copies that drift apart. Use CLAUDE.md for a <strong>pointer</strong>, never a copy, and only in these cases:</p>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Situation</th><th>Mention it in CLAUDE.md?</th></tr></thead>
+    <tbody>
+      <tr><td>A normal skill in <code>.claude/skills/</code> or <code>~/.claude/skills/</code></td><td><strong>No.</strong> It is discovered automatically. If it isn't triggering, fix the description (Chapter 5), not CLAUDE.md.</td></tr>
+      <tr><td>A skill that must apply even when the request doesn't look like a match</td><td><strong>Yes, one line.</strong> Anthropic's own <code>setup-writing-style</code> skill does this. It notes that "skills are invoke-on-demand" and offers to add this line to <code>~/.claude/CLAUDE.md</code>:<br><code>When drafting emails, messages, docs, or any prose meant to be sent or published as the user: first read ~/.claude/skills/my-writing-style/SKILL.md and follow it.</code></td></tr>
+      <tr><td>Two skills could both match and one should win in this project</td><td><strong>Yes, one line.</strong> For example: "For release notes, use /release-notes rather than general writing skills."</td></tr>
+      <tr><td>A user-only skill (<code>disable-model-invocation: true</code>)</td><td><strong>Optional.</strong> Claude can't run it, but a line like "To deploy, ask the user to run /deploy" lets Claude suggest it at the right moment.</td></tr>
+      <tr><td>A step that must happen every single time</td><td><strong>No, use a hook.</strong> Claude still follows CLAUDE.md using its judgment. Only a hook guarantees the step runs.</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>Outside Claude Code there is no CLAUDE.md. In the Claude apps you turn skills on in Settings. On the API you attach them to each request.</p>
+</section>
+
+<!-- 5 -->
+<section id="writing">
+  <div class="chap">Chapter 05</div>
+  <h2>Writing a skill well</h2>
+  <div class="key"><b>Key idea</b>Claude is already very capable. A skill should add only what Claude cannot know on its own: your conventions, your data, your preferred defaults and your quality checks.</div>
+
+  <h3>1. The description is the most important text you write</h3>
+  <p>It must answer two questions: <em>what does this do</em> and <em>when should Claude reach for it</em>. Write it in the third person, because it is inserted into the system prompt. Include the words a user would actually type.</p>
+  <div class="yesno">
+    <div class="bad"><div class="lbl">Weak</div><p><code>description: Helps with interviews.</code></p><p>Vague, no trigger words, and it competes with every other career skill.</p></div>
+    <div class="ok"><div class="lbl">Strong</div><p><code>description: Runs realistic mock technical interviews (system design, DSA, behavioral) and scores answers against a rubric. Use when the user wants to practice, rehearse or be quizzed for an interview, even if they just say "grill me on this".</code></p></div>
+  </div>
+  <div class="tip"><b>Lean slightly "pushy".</b> Anthropic's own skill-creator notes that Claude tends to <em>under</em>-trigger skills. Naming adjacent phrasings ("even if they don't say 'dashboard'") measurably helps.</div>
+
+  <h3>2. Be concise: context is shared</h3>
+  <p>For every paragraph, ask whether Claude really needs it. Do not explain what a PDF is or how Python imports work. A 50-token instruction with a code sample usually beats a 150-token explanation.</p>
+
+  <h3>3. Match freedom to fragility</h3>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Freedom</th><th>Looks like</th><th>Use when</th></tr></thead>
+    <tbody>
+      <tr><td><strong>High</strong></td><td>Plain-language steps and heuristics</td><td>Many valid approaches, context decides. Code review, writing feedback.</td></tr>
+      <tr><td><strong>Medium</strong></td><td>Pseudocode, templates with parameters</td><td>A preferred pattern exists but variation is fine. Report formats.</td></tr>
+      <tr><td><strong>Low</strong></td><td>"Run exactly this script, no extra flags."</td><td>Fragile or irreversible steps. Migrations, form filling, anything with a strict order.</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>Anthropic's analogy: on a narrow bridge with cliffs on both sides, give exact guardrails. In an open field, give a direction and trust the walker.</p>
+
+  <h3>4. Explain why, not just MUST</h3>
+  <p>"Never invent experience, because recruiters verify claims and a single false line can end the application" generalizes better than "NEVER INVENT EXPERIENCE". Claude follows reasons into situations your rules did not anticipate.</p>
+
+  <h3>5. Give a default, not a menu</h3>
+  <p>"Use pdfplumber. For scanned PDFs, use pytesseract instead." is better than listing five libraries. Each extra option is a decision Claude has to make, and some of those decisions will go the wrong way.</p>
+
+  <h3>6. Smaller rules that prevent real bugs</h3>
+  <ul>
+    <li><strong>Keep references one level deep.</strong> SKILL.md links to files directly. If a reference links to another reference, Claude may only preview the second one with something like <code>head</code> and miss content.</li>
+    <li><strong>Add a table of contents</strong> at the top of any reference file over about 100 lines.</li>
+    <li><strong>Use one term per concept.</strong> Don't alternate between "field", "box" and "input".</li>
+    <li><strong>No time bombs.</strong> Avoid "before August use the old API". Put legacy material in a clearly labelled "Old patterns" section.</li>
+    <li><strong>Say whether to run or read a script.</strong> "Run <code>validate.py</code>" and "See <code>validate.py</code> for the algorithm" lead Claude to do different things.</li>
+    <li><strong>Use full MCP tool names</strong> like <code>GitHub:create_issue</code> when several servers are connected.</li>
+    <li><strong>Forward slashes</strong> in all paths, even on Windows.</li>
+    <li><strong>Scripts should handle their own errors.</strong> Catch the error and print a helpful message. Avoid unexplained constants: explain why the timeout is 30 seconds.</li>
+  </ul>
+</section>
+
+<!-- 6 -->
+<section id="patterns">
+  <div class="chap">Chapter 06</div>
+  <h2>Pattern catalog</h2>
+  <div class="key"><b>Key idea</b>Most good skills combine two or three of these building blocks. Learn them as a vocabulary you can draw from.</div>
+
+  <div class="patterns">
+    <div class="pattern">
+      <h4>Guide + references</h4>
+      <p>SKILL.md gives a quick start and points to deeper files: "For form filling, see FORMS.md."</p>
+      <div class="use"><b>Use for:</b> a single domain with a lot of detail.</div>
+    </div>
+    <div class="pattern">
+      <h4>Router (domain split)</h4>
+      <p>SKILL.md picks a branch and loads only that branch's file: <code>references/aws.md</code>, <code>gcp.md</code>, <code>azure.md</code>.</p>
+      <div class="use"><b>Use for:</b> several variants of the same job.</div>
+    </div>
+    <div class="pattern">
+      <h4>Checklist workflow</h4>
+      <p>Numbered steps plus a checklist Claude copies into its reply and ticks off. This stops it from skipping steps.</p>
+      <div class="use"><b>Use for:</b> any multi-step process.</div>
+    </div>
+    <div class="pattern">
+      <h4>Validator loop</h4>
+      <p>Do the work, then run the validator. Fix and repeat until it passes. The validator can be a script or a style guide.</p>
+      <div class="use"><b>Use for:</b> quality-critical output.</div>
+    </div>
+    <div class="pattern">
+      <h4>Plan → validate → execute</h4>
+      <p>Claude writes a plan file such as <code>changes.json</code>, a script checks it, and only then is the plan applied.</p>
+      <div class="use"><b>Use for:</b> batch, destructive or high-stakes changes.</div>
+    </div>
+    <div class="pattern">
+      <h4>Template</h4>
+      <p>An exact output skeleton, either strict ("ALWAYS use this structure") or a flexible default.</p>
+      <div class="use"><b>Use for:</b> reports, API payloads, documents.</div>
+    </div>
+    <div class="pattern">
+      <h4>Examples (few-shot)</h4>
+      <p>Two or three input → output pairs show the style better than adjectives can.</p>
+      <div class="use"><b>Use for:</b> commit messages, tone, formatting.</div>
+    </div>
+    <div class="pattern">
+      <h4>Script-backed</h4>
+      <p>Deterministic steps live in <code>scripts/</code>. They are more reliable than code Claude writes on the spot and use no context tokens.</p>
+      <div class="use"><b>Use for:</b> parsing, conversion, scoring.</div>
+    </div>
+    <div class="pattern">
+      <h4>Conditional workflow</h4>
+      <p>"Creating new? Follow A. Editing existing? Follow B." There is a decision point at the top.</p>
+      <div class="use"><b>Use for:</b> one skill that handles several intents.</div>
+    </div>
+    <div class="pattern">
+      <h4>User-only command</h4>
+      <p><code>disable-model-invocation: true</code>. Claude never runs it on its own initiative.</p>
+      <div class="use"><b>Use for:</b> deploy, send email, submit application.</div>
+    </div>
+    <div class="pattern">
+      <h4>Background knowledge</h4>
+      <p><code>user-invocable: false</code>. Claude loads it automatically when relevant, and it stays out of the <code>/</code> menu.</p>
+      <div class="use"><b>Use for:</b> house style, schema notes, conventions.</div>
+    </div>
+    <div class="pattern">
+      <h4>Orchestrator</h4>
+      <p>A skill that writes no output itself. It splits the task up, sends the parts to subagents and combines their results. See Chapter 8.</p>
+      <div class="use"><b>Use for:</b> research, large reviews, parallel work.</div>
+    </div>
+  </div>
+</section>
+
+<!-- 7 exemplars -->
+<section id="exemplars">
+  <div class="chap">Chapter 07</div>
+  <h2>Exemplar skills by category</h2>
+  <div class="key"><b>Key idea</b>The fastest way to learn skill design is to read a few well-made skills. These are Anthropic's own skills. Each card says <em>what to study</em> in it, so you know what you're looking for when you open it.</div>
+
+  <p>Most of these are in Anthropic's public repository, <a href="https://github.com/anthropics/skills" target="_blank" rel="noopener">github.com/anthropics/skills</a>. To install them in Claude Code:</p>
+  <div class="codebox">
+    <div class="cap"><span>Claude Code</span><button type="button" data-copy="inst">Copy</button></div>
+<pre class="code" id="inst">/plugin marketplace add anthropics/skills
+/plugin install example-skills@anthropic-agent-skills
+/plugin install document-skills@anthropic-agent-skills</pre>
+  </div>
+  <p class="src-note">Cards marked <span class="tag pub">Public repo</span> are in that repository. Cards marked <span class="tag app">Claude apps</span> are built into the Claude apps and aren't in the public repo. You can read these to learn the patterns, but you can't download them from GitHub. The repo describes its skills as demonstrations for learning. The document skills (docx, pdf, pptx, xlsx) are source-available, not open source.</p>
+
+  <h3>Documents and files</h3>
+  <div class="patterns">
+    <div class="pattern">
+      <h4><code>pdf</code> <span class="tag pub">Public repo</span></h4>
+      <p>A short SKILL.md with a quick start, separate <code>FORMS.md</code> and <code>REFERENCE.md</code> files, and about ten scripts that extract fields, fill forms and check bounding boxes.</p>
+      <div class="use"><b>Study:</b> script-backed steps, plan → validate → execute for form filling, guide + references.</div>
+    </div>
+    <div class="pattern">
+      <h4><code>xlsx</code> / <code>docx</code> <span class="tag pub">Public repo</span></h4>
+      <p>SKILL.md files of only about 100 lines on top of a large set of scripts and XML schema validators. Most of the work lives in code, not prose.</p>
+      <div class="use"><b>Study:</b> how small the instructions can be when scripts handle the fragile parts. Also the descriptions, which list file extensions and the phrases users type.</div>
+    </div>
+  </div>
+
+  <h3>Developer and technical</h3>
+  <div class="patterns">
+    <div class="pattern">
+      <h4><code>mcp-builder</code> <span class="tag pub">Public repo</span></h4>
+      <p>A four-phase workflow (research, implement, review, create evaluations) with a reference library where each file is labelled with the phase that needs it, e.g. "Load During Phase 2".</p>
+      <div class="use"><b>Study:</b> phase-labelled references, a router between Python and TypeScript guides, and a workflow that ends by writing evaluations.</div>
+    </div>
+    <div class="pattern">
+      <h4><code>webapp-testing</code> <span class="tag pub">Public repo</span></h4>
+      <p>A toolkit for testing local web apps with Playwright, built around helper scripts.</p>
+      <div class="use"><b>Study:</b> the low-freedom, script-first approach for a fragile, tool-heavy job.</div>
+    </div>
+  </div>
+
+  <h3>Writing and communication</h3>
+  <div class="patterns">
+    <div class="pattern">
+      <h4><code>internal-comms</code> <span class="tag pub">Public repo</span></h4>
+      <p>A 32-line SKILL.md that identifies the type of communication and loads one guideline from <code>examples/</code> (3P updates, newsletter, FAQ, general). It ends with a list of keywords.</p>
+      <div class="use"><b>Study:</b> the smallest useful router, and a fallback step: "if nothing matches, ask".</div>
+    </div>
+    <div class="pattern">
+      <h4><code>doc-coauthoring</code> <span class="tag pub">Public repo</span></h4>
+      <p>A staged workflow for writing a document with the user: gather context, refine through iteration, then check that the document works for its readers.</p>
+      <div class="use"><b>Study:</b> a workflow paced around a person, where the skill knows when to stop and ask.</div>
+    </div>
+    <div class="pattern">
+      <h4><code>brand-guidelines</code> <span class="tag pub">Public repo</span></h4>
+      <p>Brand colors and typography that Claude applies to any artifact.</p>
+      <div class="use"><b>Study:</b> background knowledge that other tasks draw on. This is the kind of skill your <code>my-career-facts</code> would be.</div>
+    </div>
+  </div>
+
+  <h3>Creative and design</h3>
+  <div class="patterns">
+    <div class="pattern">
+      <h4><code>theme-factory</code> <span class="tag pub">Public repo</span></h4>
+      <p>A 59-line SKILL.md in front of a library of ten theme files and a showcase PDF. Claude picks one theme or generates a new one.</p>
+      <div class="use"><b>Study:</b> a router over assets. The content lives in data files, not instructions.</div>
+    </div>
+    <div class="pattern">
+      <h4><code>algorithmic-art</code> / <code>canvas-design</code> <span class="tag pub">Public repo</span></h4>
+      <p>These ship working templates (<code>generator_template.js</code>, <code>viewer.html</code>) and font files that Claude uses directly in its output.</p>
+      <div class="use"><b>Study:</b> the <code>assets/</code> idea in practice: files that go into the output without being read into context.</div>
+    </div>
+    <div class="pattern">
+      <h4><code>frontend-design</code> <span class="tag pub">Public repo</span></h4>
+      <p>About 70 lines of design judgment, with no scripts.</p>
+      <div class="use"><b>Study:</b> a high-freedom skill that guides taste and explains reasons instead of listing rules.</div>
+    </div>
+    <div class="pattern">
+      <h4><code>slack-gif-creator</code> <span class="tag pub">Public repo</span></h4>
+      <p>Slack's size and format limits, plus a small Python package of builders and validators.</p>
+      <div class="use"><b>Study:</b> encoding hard platform limits as validators, so Claude can check its output.</div>
+    </div>
+  </div>
+
+  <h3>Meta: skills about skills</h3>
+  <div class="patterns">
+    <div class="pattern">
+      <h4><code>skill-creator</code> <span class="tag pub">Public repo</span></h4>
+      <p>Creates, tests and improves skills. It has an <code>agents/</code> folder with grader, comparator and analyzer briefs, runs parallel with-skill and without-skill test runs, and includes a script that improves descriptions.</p>
+      <div class="use"><b>Study:</b> parallel fan-out for evaluation, subagent briefs stored as files, and trigger testing. Use it to build your own skills.</div>
+    </div>
+    <div class="pattern">
+      <h4><code>setup-writing-style</code> <span class="tag app">Claude apps</span></h4>
+      <p>Learns your writing voice and <em>saves the result as a new skill</em> (<code>my-writing-style</code>), then offers a one-line pointer in CLAUDE.md.</p>
+      <div class="use"><b>Study:</b> a skill whose output is another skill. Also consent before reading your data, and the CLAUDE.md pointer pattern from Chapter 4.</div>
+    </div>
+  </div>
+
+  <h3>Orchestration and behavior</h3>
+  <div class="patterns">
+    <div class="pattern">
+      <h4><code>deep-research</code> <span class="tag app">Claude apps</span></h4>
+      <p>The coordinator is told it should never research or write itself. It splits the question up, starts researcher subagents in parallel, then hands their notes to a writer subagent.</p>
+      <div class="use"><b>Study:</b> fan-out/fan-in, a table that sets how many researchers to use for a given question, and <code>references/</code> files used as subagent briefs.</div>
+    </div>
+    <div class="pattern">
+      <h4><code>learn</code> <span class="tag app">Claude apps</span></h4>
+      <p>Switches Claude into tutoring mode: work out what you already know first, then move one step at a time.</p>
+      <div class="use"><b>Study:</b> a skill that changes <em>behavior</em> rather than producing files, and a description with explicit "Trigger for" and "Don't trigger for" lists.</div>
+    </div>
+    <div class="pattern">
+      <h4><code>morning</code> <span class="tag app">Claude apps</span></h4>
+      <p>Renders a morning brief. The description deliberately narrows when it triggers: "A question about their day, schedule, or calendar is not by itself a request for the brief."</p>
+      <div class="use"><b>Study:</b> negative triggers that stop a skill from running when it shouldn't.</div>
+    </div>
+  </div>
+
+  <h3>Three description styles worth copying</h3>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Style</th><th>Seen in</th><th>Use it when</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Keyword list</strong>: names the file types and phrases users type</td><td><code>docx</code>, <code>pptx</code>, <code>xlsx</code></td><td>The trigger is a concrete object, like a file type or a tool</td></tr>
+      <tr><td><strong>Trigger for / Don't trigger for</strong> lists</td><td><code>learn</code></td><td>The skill sits next to similar intents and has to tell them apart</td></tr>
+      <tr><td><strong>Explicit negative</strong>: "X alone is not a request for this"</td><td><code>morning</code></td><td>The skill does something big, and running it by mistake would annoy the user</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="tip"><b>How to study an exemplar in 15 minutes.</b> (1) Read only the frontmatter and guess when the skill triggers. (2) Count the SKILL.md lines and list the folder. (3) Find each place SKILL.md points to another file and note <em>when</em> it says to open it. (4) Name the patterns from Chapter 6 you can see. (5) Write one sentence on what you'd copy into your own skill.</div>
+</section>
+
+<!-- 8 -->
+<section id="compose">
+  <div class="chap">Chapter 08</div>
+  <h2>Chaining, handoffs and parallel skills</h2>
+  <div class="key"><b>Key idea</b>Yes, a skill can hand over to another skill, and skills can run in parallel. But there is no built-in pipeline engine. <strong>Claude does the orchestration</strong> by following instructions you write, using the tools it has: the Skill tool, subagents and files. So you design workflows by writing clear instructions and clear handoff points.</div>
+
+  <h3>The mechanisms available to you</h3>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Mechanism</th><th>How it works</th><th>Determinism</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Instruction handoff</strong></td><td>The last step of skill A says: "When the resume is done, use the <code>drafting-cover-letter</code> skill, passing <code>out/resume.md</code>." Claude loads B with its Skill tool.</td><td>High if worded explicitly. Claude still decides, so name the skill exactly.</td></tr>
+      <tr><td><strong>Stacking (Claude Code)</strong></td><td>You type <code>/tailoring-resume /drafting-cover-letter job.txt</code>. Both skills load in the same message, and each gets the arguments.</td><td>High. You control it directly.</td></tr>
+      <tr><td><strong>Forked skill</strong></td><td><code>context: fork</code> runs the skill in its own subagent with a clean context. Its result comes back to the main conversation.</td><td>High. Isolates the work.</td></tr>
+      <tr><td><strong>Subagent with preloaded skills</strong></td><td>A custom agent in <code>.claude/agents/</code> lists <code>skills: [ats-rules]</code>, so it starts with that knowledge already loaded.</td><td>High. A reusable "specialist".</td></tr>
+      <tr><td><strong>Parallel fan-out</strong></td><td>An orchestrator skill tells Claude to start N subagents <em>in one message</em>, each with a brief. They run at the same time, and the orchestrator combines the results.</td><td>Medium to high. Depends on how clearly you split the work.</td></tr>
+      <tr><td><strong>Hooks</strong></td><td>Shell commands the harness runs on events (after a tool call, at session start, when Claude stops). Use them when a step must always happen.</td><td>Fully deterministic. Not decided by the model.</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>Workflow A: sequential handoff (a pipeline)</h3>
+  <div class="diagram">
+<pre class="mermaid">
+flowchart LR
+    U([Job post]) --> A[researching-company]
+    A -- writes out/company.md --> B[tailoring-resume]
+    B -- writes out/resume.md --> C[drafting-cover-letter]
+    C -- writes out/letter.md --> D{{Review gate: you approve}}
+    D --> E[/submit-application<br/>user-only/]
+</pre>
+    <div class="dcap">Each skill reads the previous skill's file and writes its own. The final, irreversible step is user-only.</div>
+  </div>
+  <p>Three rules make a chain reliable:</p>
+  <ol>
+    <li><strong>Pass state through files, not memory.</strong> Agree on paths like <code>out/resume.md</code>. A file is still there if the conversation gets summarized and can be read by a subagent that never saw the conversation. It also gives you something to inspect when a step goes wrong.</li>
+    <li><strong>Make the handoff a named step.</strong> "Step 5: invoke the <code>drafting-cover-letter</code> skill" works much better than "you might also want a cover letter".</li>
+    <li><strong>Gate the irreversible step.</strong> Make the final action <code>disable-model-invocation: true</code> so a person has to trigger it. A side effect: Claude cannot invoke that skill in the chain on its own, so the chain stops there and you run it.</li>
+  </ol>
+
+  <h3>Workflow B: parallel fan-out / fan-in</h3>
+  <div class="diagram">
+<pre class="mermaid">
+flowchart TB
+    O[Orchestrator skill<br/>splits the task] --> R1[Subagent 1<br/>company + product]
+    O --> R2[Subagent 2<br/>engineering blog + stack]
+    O --> R3[Subagent 3<br/>interview reports]
+    R1 -- notes/1.md --> W[Writer subagent<br/>combines notes]
+    R2 -- notes/2.md --> W
+    R3 -- notes/3.md --> W
+    W --> OUT([Prep brief])
+</pre>
+    <div class="dcap">Anthropic's own deep-research skill uses this shape: researchers run in parallel, then a separate writer combines their notes.</div>
+  </div>
+  <p>How to make this happen in a skill:</p>
+  <ul>
+    <li><strong>Ask for the spawns in a single message.</strong> "Spawn all researchers in the same turn" is what makes them run in parallel. Spawning them one by one runs them one after another.</li>
+    <li><strong>Make subtasks independent and together complete.</strong> They should not overlap, and together they should cover the whole question. Overlapping briefs produce duplicate research. Gaps produce missing sections.</li>
+    <li><strong>Keep each subagent's brief in a reference file</strong> (<code>references/researcher.md</code>). The orchestrator passes the file's path to the subagent. The orchestrator doesn't need to read that file itself, which keeps its own context small.</li>
+    <li><strong>Collect results as files.</strong> Each subagent writes to its own path, and the step that combines them reads those files.</li>
+    <li><strong>Remember that subagents don't see your conversation.</strong> A forked or spawned agent starts with only what you give it, so briefs must be self-contained.</li>
+  </ul>
+
+  <div class="codebox">
+    <div class="cap"><span>An orchestrator skill (Claude Code)</span><button type="button" data-copy="orch">Copy</button></div>
+<pre class="code" id="orch"><span class="k">---</span>
+<span class="k">name:</span> researching-company
+<span class="k">description:</span> Builds an interview-prep brief on a company by researching it from
+  several angles in parallel. Use when the user has an interview or application
+  coming up and wants to understand a company, its stack, culture or interview loop.
+<span class="k">---</span>
+
+# Company research (coordinator)
+
+You coordinate. Do not research or write the brief yourself, so your context stays clean.
+
+1. Create `research/$ARGUMENTS/notes/`.
+2. In ONE message, spawn three subagents. Give each the path to
+   `${CLAUDE_SKILL_DIR}/references/researcher.md` plus its angle:
+   - product, business model, recent news
+   - engineering blog, tech stack, open-source work
+   - public interview experiences and the likely loop
+   Each writes `research/$ARGUMENTS/notes/&lt;angle&gt;.md`.
+3. When all three are back, spawn one writer subagent with
+   `${CLAUDE_SKILL_DIR}/references/writer.md` and the notes folder.
+4. Hand the user the brief, then offer: "Want me to run the
+   tailoring-resume skill against this?"</pre>
+  </div>
+
+  <h3>Workflow C: router (one entry, many specialists)</h3>
+  <div class="diagram">
+<pre class="mermaid">
+flowchart LR
+    Q([Practice request]) --> R{interview-coach<br/>router}
+    R -- system design --> S1[references/system-design.md]
+    R -- DSA --> S2[references/dsa.md]
+    R -- behavioral --> S3[references/star-method.md]
+</pre>
+    <div class="dcap">Inside one skill. Only the matching branch is loaded, so you get specialists without paying for all of them.</div>
+  </div>
+
+  <h3>Choosing between them</h3>
+  <ul>
+    <li>Steps <strong>depend on each other's output</strong>: use a sequential handoff.</li>
+    <li>Steps <strong>don't depend on each other</strong> and each is large: fan out to subagents.</li>
+    <li>It's <strong>one job with variants</strong>: use a router inside a single skill. Don't build many small skills that compete for the same trigger.</li>
+    <li>A step <strong>must always run</strong> (formatting, a check, a log entry): use a hook, not an instruction.</li>
+  </ul>
+  <div class="warn"><b>Limits to know.</b> Model-driven handoffs are probabilistic, so test them. Background forked subagents run with a narrower tool set. Parallel subagents can cost several times the tokens of one agent, so use them when the work is large enough to justify it. Don't create circular handoffs between two skills.</div>
+</section>
+
+<!-- 8 -->
+<section id="compare">
+  <div class="chap">Chapter 09</div>
+  <h2>Skills compared with the other building blocks</h2>
+  <div class="key"><b>Key idea</b>Each building block answers a different question. Skills cover <em>how to do this job</em>. MCP covers <em>how to reach that system</em>. Subagents give <em>a separate worker with its own context</em>. CLAUDE.md holds <em>what is always true in this project</em>. Hooks cover <em>what must always happen</em>.</div>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Building block</th><th>What it is</th><th>When it is loaded</th><th>Reach for it when</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Skill</strong></td><td>Instructions, files and scripts for a procedure</td><td>On demand, by description match or <code>/name</code></td><td>You keep re-explaining the same workflow or conventions</td></tr>
+      <tr><td><strong>CLAUDE.md</strong></td><td>Always-on project memory</td><td>Every session, in full</td><td>Short facts that apply to almost every task (build command, code style). It does <em>not</em> need to list your skills, see Chapter 4.</td></tr>
+      <tr><td><strong>MCP server</strong></td><td>A connection that gives Claude new tools (GitHub, Gmail, a database)</td><td>Tool definitions are available all session</td><td>Claude needs to <em>access</em> a system. A skill often teaches <em>how to use</em> those tools well.</td></tr>
+      <tr><td><strong>Subagent</strong></td><td>A separate Claude instance with its own context, prompt and tools</td><td>When spawned</td><td>Big side tasks that would clutter the main context, or parallel work</td></tr>
+      <tr><td><strong>Hook</strong></td><td>A shell command the harness runs on an event</td><td>Every time the event fires</td><td>Something must happen every time, regardless of what the model decides</td></tr>
+      <tr><td><strong>Slash command</strong></td><td>Now the same thing as a skill in Claude Code</td><td>When you type it</td><td>Use a skill. Old command files still work.</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>These are usually combined. For example: an MCP server gives Claude Gmail access, a skill describes your follow-up email etiquette, a subagent drafts ten emails in parallel, and a hook logs every sent message.</p>
+</section>
+
+<!-- 9 -->
+<section id="testing">
+  <div class="chap">Chapter 10</div>
+  <h2>Testing and iteration</h2>
+  <div class="key"><b>Key idea</b>Write the tests before you write a lot of instructions. Without tests you are guessing what Claude needs. With them you can see where it actually fails.</div>
+
+  <h3>The evaluation-driven loop</h3>
+  <ol>
+    <li><strong>Baseline:</strong> run 3 or more realistic tasks <em>without</em> the skill and write down exactly where Claude falls short.</li>
+    <li><strong>Write the minimum:</strong> only enough instruction to close those gaps.</li>
+    <li><strong>Compare:</strong> rerun the same tasks with the skill and compare against the baseline.</li>
+    <li><strong>Refine and widen:</strong> fix what broke, then add more test cases.</li>
+  </ol>
+
+  <h3>Test triggering separately</h3>
+  <p>Ask two questions: does the skill <em>do the job well</em>, and does it <em>activate at the right moments</em>? For triggering, write about 20 queries:</p>
+  <ul>
+    <li><strong>Should trigger (8–10):</strong> different phrasings, casual and formal, including ones that never name the skill.</li>
+    <li><strong>Should not trigger (8–10):</strong> near misses that share keywords but need something else. "Write a fibonacci function" is a useless negative test for a resume skill. "Review my LinkedIn headline" is a useful one.</li>
+  </ul>
+  <p>Anthropic's <code>skill-creator</code> skill automates this. It runs each query several times, splits the queries into a training set and a held-out set, and proposes better descriptions.</p>
+
+  <h3>Claude A writes, Claude B tests</h3>
+  <p>Do a real task with one Claude session (A) and notice the context you keep supplying. Ask A to turn that into a skill. Then use it in a <em>fresh</em> session (B) on similar tasks. Bring B's mistakes back to A as specific notes, for example "B forgot to cap the resume at one page".</p>
+
+  <h3>Watch how Claude navigates</h3>
+  <ul>
+    <li>A file is never opened: it's either unnecessary or not clearly referenced.</li>
+    <li>The same reference file is opened every time: move its content into SKILL.md.</li>
+    <li>Files are read in an unexpected order: your structure isn't as clear as you think.</li>
+  </ul>
+  <p><strong>Test with every model you'll use.</strong> Haiku may need more guidance, while Opus may find a long explanation unnecessary. Aim for instructions that work for all of them.</p>
+</section>
+
+<!-- 10 -->
+<section id="example">
+  <div class="chap">Chapter 11</div>
+  <h2>Worked example: your job-search skill set</h2>
+  <div class="key"><b>Key idea</b>Here is a small, realistic skill set for interview prep and job applications. It uses the patterns from Chapters 6 and 8, so you can build it and see them working.</div>
+
+  <div class="codebox">
+    <div class="cap"><span>.claude/skills/ (or ~/.claude/skills/)</span><button type="button" data-copy="tree2">Copy</button></div>
+<pre class="code" id="tree2">researching-company/      <span class="c"># orchestrator, parallel fan-out</span>
+  SKILL.md
+  references/researcher.md
+  references/writer.md
+tailoring-resume/          <span class="c"># checklist + validator loop + script</span>
+  SKILL.md
+  references/ats-rules.md
+  scripts/keyword_gap.py
+drafting-cover-letter/     <span class="c"># template + examples</span>
+  SKILL.md
+  assets/letter-template.md
+interview-coach/           <span class="c"># router</span>
+  SKILL.md
+  references/system-design.md
+  references/dsa.md
+  references/star-method.md
+my-career-facts/           <span class="c"># background knowledge, user-invocable: false</span>
+  SKILL.md                 <span class="c"># your real roles, dates, metrics: the single source of truth</span></pre>
+  </div>
+
+  <div class="codebox">
+    <div class="cap"><span>interview-coach/SKILL.md (router)</span><button type="button" data-copy="coach">Copy</button></div>
+<pre class="code" id="coach"><span class="k">---</span>
+<span class="k">name:</span> interview-coach
+<span class="k">description:</span> Runs mock interviews and gives scored feedback for system design,
+  data structures and algorithms, and behavioral rounds. Use when the user wants to
+  practice, rehearse, be quizzed or get feedback on an interview answer.
+<span class="k">---</span>
+
+# Interview coach
+
+## Pick the round
+- System design → read `references/system-design.md`
+- Coding / DSA → read `references/dsa.md`
+- Behavioral → read `references/star-method.md`
+If unclear, ask which round in one short question.
+
+## Run it
+Ask ONE question at a time and wait for the answer. The user is practicing
+recall, so a list of questions defeats the point.
+
+After each answer, give: a score out of 4 against the rubric in the reference
+file, the single most important improvement, and one follow-up question an
+interviewer would really ask.
+
+## Ground behavioral feedback in real history
+For behavioral rounds, check stories against the my-career-facts skill.
+Flag any claim it doesn't support. Interviewers probe details.</pre>
+  </div>
+
+  <p>How the pieces connect:</p>
+  <ul>
+    <li><code>researching-company</code> runs three subagents in parallel and writes <code>research/&lt;company&gt;/brief.md</code>.</li>
+    <li><code>tailoring-resume</code> reads that brief, runs <code>keyword_gap.py</code>, loops until it passes the ATS rules and writes <code>out/resume.md</code>. Its last step hands off to <code>drafting-cover-letter</code>.</li>
+    <li><code>interview-coach</code> uses the same brief to choose realistic questions.</li>
+    <li><code>my-career-facts</code> is loaded automatically by all of them. Your facts live in one place and never drift between documents.</li>
+  </ul>
+  <div class="tip"><b>Build order.</b> Start with <code>interview-coach</code> alone. It's a single file and gives quick feedback, so you can practice writing descriptions and test triggering. Add the orchestrator last, because it's the hardest to debug.</div>
+</section>
+
+<!-- 11 -->
+<section id="safety">
+  <div class="chap">Chapter 12</div>
+  <h2>Safety and sharing</h2>
+  <div class="key"><b>Key idea</b>A skill can tell Claude to run code and use tools. Installing one is like installing software, so trust it the same way.</div>
+  <ul>
+    <li><strong>Only install skills from sources you trust,</strong> and read the scripts first. Watch for unexpected network calls or instructions to send data elsewhere.</li>
+    <li><strong>No surprises.</strong> A skill should do what its description says and nothing else.</li>
+    <li><strong>Never put secrets in a skill.</strong> Use environment variables or the platform's secret store.</li>
+    <li><strong>Keep <code>allowed-tools</code> narrow,</strong> for example <code>Bash(git diff *)</code> rather than all of <code>Bash</code>.</li>
+    <li><strong>Make side effects user-only</strong> (sending, deploying, submitting).</li>
+    <li><strong>Share through version control:</strong> commit project skills to <code>.claude/skills/</code>, or package a collection as a plugin.</li>
+  </ul>
+</section>
+
+<!-- 12 -->
+<section id="interview">
+  <div class="chap">Chapter 13</div>
+  <h2>The interview angle</h2>
+  <div class="key"><b>Key idea</b>Interviewers asking about agents usually want to see that you understand <em>context management</em>, <em>determinism vs model judgment</em>, and <em>how to evaluate</em>. Skills are a clear example of all three.</div>
+
+  <details class="qa"><summary>"What is an Agent Skill, in one breath?"</summary>
+    <p>A folder with a SKILL.md and optional scripts and references that packages a procedure for an agent. Only its name and description sit in context all the time. The rest loads when the task matches, so an agent can have hundreds of skills without paying for them in context.</p></details>
+  <details class="qa"><summary>"Why not put everything in the system prompt?"</summary>
+    <p>Context is limited and shared. Every always-on token costs latency and money and competes for the model's attention. Progressive disclosure gives you a large library while paying only for what the current task uses.</p></details>
+  <details class="qa"><summary>"How is that different from MCP?"</summary>
+    <p>MCP gives the agent new tools, meaning access to systems. A skill gives it a procedure, meaning how to do a job, often using those tools. They work together.</p></details>
+  <details class="qa"><summary>"How would you make a multi-step agent workflow reliable?"</summary>
+    <p>Put the deterministic parts in scripts and hooks. Pass state through files with agreed paths. Add validation loops and plan-then-validate steps. Use human approval gates for irreversible actions. Measure with evals, including trigger evals with near-miss negatives.</p></details>
+  <details class="qa"><summary>"When would you run subagents in parallel?"</summary>
+    <p>When the subtasks are independent and each is large enough to justify a separate context, as in research or multi-file review. The trade-off is token cost and the work of combining the results. Sequential work stays sequential.</p></details>
+</section>
+
+<!-- 13 -->
+<section id="checklist">
+  <div class="chap">Chapter 14</div>
+  <h2>Checklist and glossary</h2>
+  <h3>Before you ship a skill</h3>
+  <ul class="check">
+    <li>Description says <em>what</em> and <em>when</em>, in the third person, with the words users actually type</li>
+    <li>SKILL.md body is under ~500 lines. Detail lives in reference files one level deep.</li>
+    <li>Reference files over 100 lines start with a table of contents</li>
+    <li>Defaults instead of menus, consistent terms, no time-dependent claims</li>
+    <li>Multi-step work has a checklist. Quality-critical work has a validator loop.</li>
+    <li>Scripts handle their own errors and have no unexplained constants. Each script is clearly marked as "run" or "read".</li>
+    <li>Handoffs name the next skill exactly and pass state through files</li>
+    <li>Side-effect skills are user-only. <code>allowed-tools</code> is narrow.</li>
+    <li>3+ task evals and about 20 trigger evals, tested on every model you'll use</li>
+    <li>Not copied into CLAUDE.md. At most, a one-line pointer for an always-on rule.</li>
+    <li>Frontmatter uses only portable fields if the skill must work outside Claude Code</li>
+  </ul>
+
+  <h3>Glossary</h3>
+  <dl class="gloss">
+    <dt>Context window</dt><dd>Everything the model can see in one request. It's limited, and every token in it costs money and attention.</dd>
+    <dt>Progressive disclosure</dt><dd>Loading information in layers, only when needed.</dd>
+    <dt>Frontmatter</dt><dd>The YAML block between <code>---</code> lines at the top of SKILL.md.</dd>
+    <dt>Trigger</dt><dd>Claude deciding a skill applies, based on its description.</dd>
+    <dt>Subagent</dt><dd>A separate Claude instance with its own fresh context, given a task and returning a result.</dd>
+    <dt>Fork</dt><dd>Running a skill inside a subagent (<code>context: fork</code>) instead of the main conversation.</dd>
+    <dt>Fan-out / fan-in</dt><dd>Splitting work across parallel workers, then combining their outputs.</dd>
+    <dt>Hook</dt><dd>A command the harness runs automatically on an event. It's deterministic and not decided by the model.</dd>
+    <dt>MCP</dt><dd>Model Context Protocol, a standard way to connect tools and data sources to an agent.</dd>
+    <dt>Eval</dt><dd>A repeatable test case with expected behavior, used to measure whether a change helped.</dd>
+  </dl>
+
+  <footer>Sources: Claude Code Skills docs (code.claude.com/docs/en/skills), Agent Skills best practices (platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices), and Anthropic's example skills skill-creator and deep-research. Field limits and frontmatter keys change. Check the docs before relying on an exact number.</footer>
+</section>
+</main>
+</div>
+
+<script>
+document.querySelectorAll('button[data-copy]').forEach(function (btn) {
+  btn.addEventListener('click', function () {
+    var el = document.getElementById(btn.getAttribute('data-copy'));
+    if (!el) return;
+    var text = el.innerText;
+    var done = function () { btn.textContent = 'Copied'; setTimeout(function () { btn.textContent = 'Copy'; }, 1500); };
+    var fallback = function () {
+      var r = document.createRange(); r.selectNodeContents(el);
+      var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+      btn.textContent = 'Selected, press Ctrl+C';
+    };
+    try {
+      navigator.clipboard.writeText(text).then(done, fallback);
+    } catch (e) { fallback(); }
+  });
+});
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
+<script>
+(function () {
+  var dark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  mermaid.initialize({ startOnLoad: true, theme: dark ? 'dark' : 'neutral', securityLevel: 'strict' });
+})();
+</script>
+</body>
+</html>
