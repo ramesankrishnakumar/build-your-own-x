@@ -298,7 +298,7 @@ footer.end ol { font-size: 0.9rem; }
   <header class="masthead">
     <p class="eyebrow">Field guide · Agentic development · October 2026</p>
     <h1>The Software Factory Playbook</h1>
-    <p class="deck">How to run an AI coding setup where agents do the building, machines do the checking, and you make the calls that matter. Written for one developer setting up their first factory, without wasting tokens.</p>
+    <p class="deck">How to run an AI coding setup where agents do the building, machines do the checking, and you make the calls that matter. Written for one developer setting up a factory for personal projects, without wasting tokens or money.</p>
   </header>
 
   <div class="grid">
@@ -311,11 +311,11 @@ footer.end ol { font-size: 0.9rem; }
         <li><a href="#good">What makes it good</a></li>
         <li><a href="#you">Your role</a></li>
         <li><a href="#options">Getting clear options</a></li>
+        <li><a href="#guardrails">Guardrails</a></li>
         <li><a href="#verify">Verification</a></li>
         <li><a href="#tokens">Not burning tokens</a></li>
         <li><a href="#choose">Custom or open source</a></li>
         <li><a href="#build">Build yours</a></li>
-        <li><a href="#interview">Interview angle</a></li>
         <li><a href="#checklist">Checklist</a></li>
       </ol>
     </nav>
@@ -331,6 +331,7 @@ footer.end ol { font-size: 0.9rem; }
           <li><span><strong>You don't get to chill, but you stop typing most of the code.</strong> Your job moves to the two ends: saying exactly what "done" means, and judging whether it is done.</span></li>
           <li><span><strong>Machines verify, humans decide.</strong> Tests, linters and type checks run automatically inside the agent's loop and again in CI. You are asked questions only at real decision points, through a short "Decision Card" with at most three options.</span></li>
           <li><span><strong>CI is the source of truth.</strong> An agent saying "all tests pass" is a claim. A green CI run on the pull request is evidence. Branch protection makes CI a hard gate.</span></li>
+          <li><span><strong>Instructions are suggestions; configuration is enforcement.</strong> Anything that would really hurt (deleting data, leaking secrets, touching production) is blocked by permissions, hooks and a sandbox, not by a sentence in a prompt.</span></li>
           <li><span><strong>Start thin and custom, on top of Claude Code's built-in pieces.</strong> A short <code>CLAUDE.md</code>, three or four hooks, one CI workflow and a few skills. Add an open-source spec framework later only if you feel the pain it solves.</span></li>
         </ol>
       </section>
@@ -502,8 +503,41 @@ footer.end ol { font-size: 0.9rem; }
       </section>
 
       <!-- 07 -->
+      <section id="guardrails">
+        <h2><span class="no">07</span>Guardrails: stopping the dumb stuff</h2>
+        <p class="lede">You can't stop an agent from having bad ideas. You can make sure bad ideas either can't run, or get caught before they matter.</p>
+        <p>When people talk about "configuring the environment" for an agent, they mean layers of control around it. Some are <strong>soft</strong>: instructions the agent usually follows but can forget or misread. Others are <strong>hard</strong>: the agent physically can't do the thing, or is stopped automatically when it tries. Think of a new hire: the onboarding doc is soft, the badge that only opens certain doors is hard.</p>
+
+        <div class="table-scroll">
+          <table class="t-wide">
+            <thead><tr><th>Layer</th><th>Question it answers</th><th>In Claude Code</th><th>Kind</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Context</strong></td><td>What does it know about how we work?</td><td><code>CLAUDE.md</code>, skills</td><td><span class="chip lo">soft</span></td></tr>
+              <tr><td><strong>Permissions</strong></td><td>What is it allowed to do?</td><td><code>allow</code> / <code>ask</code> / <code>deny</code> rules in <code>.claude/settings.json</code></td><td><span class="chip hi">hard</span></td></tr>
+              <tr><td><strong>Hooks</strong></td><td>What gets checked or blocked automatically?</td><td>A <code>PreToolUse</code> hook that refuses a command before it runs</td><td><span class="chip hi">hard</span></td></tr>
+              <tr><td><strong>Sandbox</strong></td><td>If it goes wrong, how much can it break?</td><td>Sandbox mode, a container or cloud session, a separate git worktree, no production credentials</td><td><span class="chip hi">hard</span></td></tr>
+              <tr><td><strong>Code guardrails</strong></td><td>Does the change fit the expected shape?</td><td>Type checker, lint rules, architecture tests, CI, branch protection</td><td><span class="chip hi">hard</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>How each layer helps</h3>
+        <ul>
+          <li><strong>Permissions</strong> sort actions into three buckets: run freely (your check command), ask first (installing a package), never (reading <code>.env</code>, force-pushing). The settings file in <a href="#build">Build yours, phase 3</a> has a starting set.</li>
+          <li><strong>Hooks</strong> cover rules too specific for a permission list, such as "never edit <code>migrations/</code>" or "block any command containing <code>DROP TABLE</code>". The hook exits with code 2, the action is cancelled, and the agent is told why.</li>
+          <li><strong>The sandbox is the real safety net</strong>, because pattern lists can be dodged. Block <code>rm -rf</code> and a determined agent may delete files another way. So also limit what it can <em>reach</em>: run it in Claude Code's sandbox mode, a container or a cloud session; give it no production keys; let it push only to branches, never to <code>main</code>.</li>
+          <li><strong>Code guardrails</strong> make "the way we do things here" checkable: a type checker rejects wrong data shapes, a lint rule can ban raw SQL outside <code>db/</code>, and an architecture test (dependency-cruiser, ArchUnit) can stop UI code importing the database layer.</li>
+        </ul>
+
+        <div class="box key">
+          <span class="label">Two questions for any risky action</span>
+          <p><strong>1. Can it happen at all?</strong> Say no with permissions and the sandbox where you can.<br><strong>2. If it happens, how fast is it caught and how cheap is it to undo?</strong> Hooks catch it in seconds, CI in minutes, and working on branches keeps it reversible.</p>
+        </div>
+      </section>
+
+      <!-- 08 -->
       <section id="verify">
-        <h2><span class="no">07</span>Verification: the part that matters most</h2>
+        <h2><span class="no">08</span>Verification: the part that matters most</h2>
         <p class="lede">An agent saying "done" is a claim, not evidence. Verification turns claims into evidence, automatically, at several layers.</p>
 
         <div class="box key">
@@ -521,7 +555,7 @@ footer.end ol { font-size: 0.9rem; }
           <li data-l="1">
             <h3>Inside the agent loop</h3>
             <p class="meta">Seconds · Claude Code hooks · every edit</p>
-            <p>A <code>PostToolUse</code> hook formats and lints each file right after the agent edits it. A <code>Stop</code> hook runs your fast check command when the agent tries to finish; if it fails, the hook sends the errors back and the agent keeps working. This catches most mistakes before you ever see them, and the shell commands themselves cost no tokens.</p>
+            <p>A <code>PostToolUse</code> hook formats and lints each file right after the agent edits it. A <code>Stop</code> hook runs your fast check command when the agent tries to finish; if it fails, the hook sends the errors back and the agent keeps working. This catches most mistakes before you ever see them, and the shell commands themselves cost no tokens. For UI and API work, also have the agent start the app and try the feature itself: click through it in a browser, or call the endpoint and read the response.</p>
           </li>
           <li data-l="2">
             <h3>Pre-commit</h3>
@@ -531,7 +565,7 @@ footer.end ol { font-size: 0.9rem; }
           <li data-l="3">
             <h3>CI: the source of truth</h3>
             <p class="meta">Minutes · GitHub Actions · every PR</p>
-            <p>A clean machine runs the full suite: build, type check, all tests, dependency audit, security scan. With branch protection's "required status checks", nothing merges while it's red. CI can't be argued with, and it doesn't share the agent's assumptions about its own environment.</p>
+            <p>A clean machine runs the full suite: build, type check, unit tests, end-to-end and API tests, dependency audit, security scan. With branch protection's "required status checks", nothing merges while it's red. CI can't be argued with, and it doesn't share the agent's assumptions about its own environment.</p>
           </li>
           <li data-l="4">
             <h3>AI reviewer</h3>
@@ -557,6 +591,27 @@ footer.end ol { font-size: 0.9rem; }
           <li><strong>Read the test diff first in review.</strong> Deleted assertions, new <code>skip</code> markers or loosened expected values are red flags.</li>
           <li><strong>Mutation testing</strong> (optional, later). Tools like Stryker or mutmut change your code on purpose and check the tests notice. It measures test quality, not just coverage.</li>
         </ol>
+
+        <h3>Should an agent test the running product in CI?</h3>
+        <p>Meaning: an agent that opens your app, clicks through a feature, or calls your API, and decides pass or fail. As of late 2026 this is <strong>emerging, not standard, and not used as a merge gate</strong>. The standard pattern is:</p>
+        <div class="box key">
+          <span class="label">The pattern</span>
+          <p><strong>The agent explores and writes the checks. Deterministic scripts enforce them in CI.</strong></p>
+        </div>
+        <p>An agent makes a poor gate for four reasons. It isn't repeatable: two runs on the same build can give two verdicts, which is a flaky test. It can be confidently wrong ("the page looked fine"). It's slow and costs tokens every run, where a Playwright script costs nothing and finishes in seconds. And when it fails, you get a story instead of a line number.</p>
+        <div class="table-scroll">
+          <table class="t-mid">
+            <thead><tr><th>Where</th><th>What the agent does</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td><strong>While building</strong></td><td>Starts the app, tries the feature in a browser, or calls the endpoint to check its own work.</td><td><span class="chip hi">do this</span></td></tr>
+              <tr><td><strong>Writing tests</strong></td><td>Turns each acceptance criterion into a Playwright (UI) or API test that you review and commit. Playwright ships planner, generator and healer agents for exactly this.</td><td><span class="chip hi">do this</span></td></tr>
+              <tr><td><strong>CI gate</strong></td><td>Nothing. The scripted tests it wrote run here.</td><td><span class="chip md">standard</span></td></tr>
+              <tr><td><strong>CI, advisory</strong></td><td>Gets the preview URL and the criteria, explores, posts a comment with findings and screenshots. Never blocks a merge.</td><td><span class="chip lo">optional, later</span></td></tr>
+              <tr><td><strong>After deploy</strong></td><td>Scripted smoke tests hit a few real endpoints on a schedule.</td><td><span class="chip md">standard</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>For a backend, the scripted checks are <strong>API integration tests</strong> (real requests against a test server), <strong>contract tests</strong> that confirm the API still matches its OpenAPI spec (Schemathesis, Pact), and a few <strong>post-deploy smoke tests</strong>. If you try an advisory agent job, point it at a preview or test environment with test accounts, never at production.</p>
 
         <h3>What you can and cannot do</h3>
         <div class="two">
@@ -589,15 +644,15 @@ footer.end ol { font-size: 0.9rem; }
           <li>Deterministic checks are the gate; LLM checks are advice.</li>
           <li>Same checks run locally (in the loop) and in CI, from the same commands, so "works for the agent" means "works in CI".</li>
           <li>Keep the fast check under about a minute so the agent can run it often.</li>
-          <li>Small PRs, required status checks, and at least one human approval on anything risky.</li>
+          <li>Small PRs and required status checks. Teams also require a human approval; on a solo repo, skip that setting, because GitHub won't let you approve your own pull request.</li>
           <li>Least privilege for agents: read-only by default, narrow write access, no production secrets.</li>
           <li>Every escaped bug becomes a regression test.</li>
         </ul>
       </section>
 
-      <!-- 08 -->
+      <!-- 09 -->
       <section id="tokens">
-        <h2><span class="no">08</span>Running it without burning tokens</h2>
+        <h2><span class="no">09</span>Running it without burning tokens</h2>
         <p class="lede">Most token waste comes from context, not from the code being written. Every turn, the model re-reads everything in its context window. Keep that window small and relevant.</p>
 
         <h3>Where tokens actually go</h3>
@@ -628,12 +683,18 @@ footer.end ol { font-size: 0.9rem; }
             </tbody>
           </table>
         </div>
+        <h3>On a personal budget</h3>
+        <ul>
+          <li><strong>Subscription vs API key.</strong> Interactive work on a Claude subscription has a predictable monthly cost. Pay-per-token API keys suit CI jobs. Compare both against how much you actually use.</li>
+          <li><strong>Make CI agents opt-in.</strong> Run the AI reviewer on a label, not on every PR. Your deterministic CI still runs every time, for free or nearly so.</li>
+          <li><strong>Spend the big model where it pays.</strong> Plan with the strongest model, then build and fix with the everyday one.</li>
+        </ul>
         <p class="small">Prices change often, so this guide gives no per-token numbers. Check Anthropic's current pricing page when you size a budget.</p>
       </section>
 
-      <!-- 09 -->
+      <!-- 10 -->
       <section id="choose">
-        <h2><span class="no">09</span>Custom or open source?</h2>
+        <h2><span class="no">10</span>Custom or open source?</h2>
         <p class="lede">Build a thin custom setup on Claude Code's built-in pieces. Borrow ideas from open-source frameworks; adopt one wholesale only if it solves a pain you already feel.</p>
 
         <div class="card" role="figure" aria-label="Decision card: which setup">
@@ -645,7 +706,7 @@ footer.end ol { font-size: 0.9rem; }
             <div class="opt rec">
               <h4>A. Thin custom <span class="chip md">recommended</span></h4>
               <ul>
-                <li class="pro">You understand every piece, which you can explain in interviews</li>
+                <li class="pro">You understand every piece, so you can fix it when it breaks</li>
                 <li class="pro">Smallest token overhead</li>
                 <li class="con">You write the templates yourself</li>
                 <li class="con">Less structure for big multi-week projects</li>
@@ -688,7 +749,7 @@ footer.end ol { font-size: 0.9rem; }
         </div>
 
         <h3>Standards worth borrowing, whichever route you take</h3>
-        <p>These are stable conventions, not frameworks. Adopting them costs nothing and makes your setup easier for others (and interviewers) to understand.</p>
+        <p>These are stable conventions, not frameworks. Adopting them costs nothing, and they make your projects easier to pick up again after months away.</p>
         <ul>
           <li><strong>Given / When / Then</strong> for acceptance criteria (from BDD). Each line maps to one test.</li>
           <li><strong>Architecture Decision Records</strong> (ADRs): a one-page Markdown file per big decision, in <code>docs/adr/</code>. Your accepted Decision Cards become ADRs.</li>
@@ -699,9 +760,9 @@ footer.end ol { font-size: 0.9rem; }
         </ul>
       </section>
 
-      <!-- 10 -->
+      <!-- 11 -->
       <section id="build">
-        <h2><span class="no">10</span>Build yours, step by step</h2>
+        <h2><span class="no">11</span>Build yours, step by step</h2>
         <p class="lede">Five phases. Each one is useful on its own, so you can stop after any of them. Examples use a Node project; swap the commands for your stack.</p>
 
         <ol class="phases">
@@ -730,6 +791,8 @@ footer.end ol { font-size: 0.9rem; }
 4. One issue, one branch, one small PR.
 5. Never skip, delete or weaken a test to get green. If a test looks wrong, tell me why.
 6. "Done" means `npm run check` passes. Paste the last lines of its output.
+7. After a UI change, start the app and try each acceptance criterion in the browser.
+   After an API change, call the endpoint and show me the response.
 
 ## When you need a decision from me
 Ask only when the answer changes what you'd do AND the choice is costly to undo.
@@ -752,12 +815,21 @@ auth/security code, deleting data, anything that costs money.
           </li>
 
           <li>
-            <h3>Hooks: verification inside the loop</h3>
-            <p>Three things: format each edited file, block reads of secrets and edits to CI config, and refuse to let the agent finish while checks fail.</p>
+            <h3>Guardrails and hooks</h3>
+            <p>Four things: sort commands into allowed, ask-first and forbidden; block dangerous commands and protected paths before they run; format each edited file; and refuse to let the agent finish while checks fail. For the strongest protection, also run the agent in Claude Code's sandbox mode or a cloud session, and keep production keys off the machine entirely.</p>
             <details>
               <summary>Settings <span class="path">.claude/settings.json</span></summary>
               <div class="body"><div class="code"><pre>{
   "permissions": {
+    "allow": [
+      "Bash(npm run check)",
+      "Bash(npm test:*)",
+      "Bash(git status)",
+      "Bash(git diff:*)"
+    ],
+    "ask": [
+      "Bash(npm install:*)"
+    ],
     "deny": [
       "Read(./.env)",
       "Read(./.env.*)",
@@ -765,6 +837,14 @@ auth/security code, deleting data, anything that costs money.
     ]
   },
   "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash|Edit|Write|MultiEdit",
+        "hooks": [
+          { "type": "command", "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/guard.sh" }
+        ]
+      }
+    ],
     "PostToolUse": [
       {
         "matcher": "Edit|Write|MultiEdit",
@@ -783,6 +863,29 @@ auth/security code, deleting data, anything that costs money.
     ]
   }
 }</pre></div></div>
+            </details>
+            <details>
+              <summary>Guard hook <span class="path">.claude/hooks/guard.sh</span></summary>
+              <div class="body">
+                <p class="small">Runs before every shell command and file edit. Pattern lists like this catch honest mistakes, not every possible route, which is why the sandbox matters too. Make it executable with <code>chmod +x</code>.</p>
+                <div class="code"><pre>#!/usr/bin/env bash
+# Runs before Bash and file edits. Exit 2 cancels the action and tells the agent why.
+input=$(cat)
+cmd=$(echo "$input" | jq -r '.tool_input.command // empty')
+path=$(echo "$input" | jq -r '.tool_input.file_path // empty')
+
+if [ -n "$cmd" ] &amp;&amp; echo "$cmd" | grep -Eqi 'rm -rf (/|~)|git push.*(--force|-f( |$))|git reset --hard|drop (table|database)'; then
+  echo "Blocked: this command is on the dangerous list. Ask the user first." &gt;&amp;2
+  exit 2
+fi
+
+case "$path" in
+  */migrations/*|*/.env*)
+    echo "Blocked: $path is protected. Ask the user first." &gt;&amp;2
+    exit 2 ;;
+esac
+exit 0</pre></div>
+              </div>
             </details>
             <details>
               <summary>Stop hook <span class="path">.claude/hooks/verify.sh</span></summary>
@@ -808,12 +911,16 @@ fi
 exit 0</pre></div>
               </div>
             </details>
-            <div class="done"><b>Done when</b>you ask the agent to break a test on purpose and it can't finish until it fixes it.</div>
+            <div class="done"><b>Done when</b>you ask the agent to break a test on purpose and it can't finish until it fixes it, and a request to force-push is refused.</div>
           </li>
 
           <li>
             <h3>CI gate and AI reviewer</h3>
-            <p>Two workflows: one deterministic gate that must pass, one AI reviewer that comments. Then turn on branch protection for <code>main</code> with the <code>check</code> job as a required status check, and turn on GitHub secret scanning with push protection.</p>
+            <p>Two workflows: one deterministic gate that must pass, one AI reviewer that comments. Then turn on branch protection for <code>main</code> with the <code>check</code> job as a required status check, and turn on GitHub secret scanning with push protection. If the project has a UI or an API, add its end-to-end or API tests to the gate (have the agent write them from the acceptance criteria).</p>
+            <div class="box gate">
+              <span class="label">Solo-repo settings</span>
+              <p>Don't tick "require approvals" in branch protection: GitHub won't let you approve your own pull request, so every merge would be blocked. Required status checks are the gate that matters. Private repos get a limited number of free GitHub Actions minutes, so keep CI fast and cancel superseded runs.</p>
+            </div>
             <details>
               <summary>Deterministic gate <span class="path">.github/workflows/ci.yml</span></summary>
               <div class="body"><div class="code"><pre>name: ci
@@ -841,7 +948,7 @@ jobs:
             <details>
               <summary>AI reviewer <span class="path">.github/workflows/ai-review.yml</span></summary>
               <div class="body">
-                <p class="small">Uses Anthropic's official <code>claude-code-action</code>. Add <code>ANTHROPIC_API_KEY</code> as a repository secret. Input names change between versions, and the reviewer needs permission to post comments, so copy the tool settings from the code-review example in the action's README.</p>
+                <p class="small">Uses Anthropic's official <code>claude-code-action</code>. Add <code>ANTHROPIC_API_KEY</code> as a repository secret. Input names change between versions, and the reviewer needs permission to post comments, so copy the tool settings from the code-review example in the action's README. The README also explains how to authenticate with a Claude subscription instead of an API key, which can be cheaper for personal projects. To save more, trigger it only when you add a label such as <code>ai-review</code>.</p>
                 <div class="code"><pre>name: ai-review
 on:
   pull_request:
@@ -909,26 +1016,8 @@ about: Work for the factory
         </ol>
 
         <div class="box ok">
-          <span class="label">A normal day once it's running</span>
-          <p>Morning: write two or three short issues, run <code>/spec</code> on each, fix the criteria. Approve plans and answer any Decision Cards. Let the agent build while you study or do other work. Afternoon: review the PRs that are green, merge or send back. Friday: ten-minute retro.</p>
-        </div>
-      </section>
-
-      <!-- 11 -->
-      <section id="interview">
-        <h2><span class="no">11</span>Interview angle</h2>
-        <p>Teams now ask how candidates work with AI agents. Building this setup gives you concrete answers. Three you can use almost word for word:</p>
-        <div class="box key">
-          <span class="label">"How do you make sure AI-written code is correct?"</span>
-          <p>"I don't trust the agent's report. Deterministic checks run inside the agent's loop through hooks, and the same command runs again in CI, which is a required check for merging. A second agent reviews the diff as advice, and I review the tests first, because the main risk is tests that match the bug."</p>
-        </div>
-        <div class="box key">
-          <span class="label">"Where do you stay involved?"</span>
-          <p>"At decisions that are expensive to undo: the spec, schema and API changes, new dependencies, security, and the merge. The agent brings me a short Decision Card with up to three options. Cheap, reversible choices it makes itself and tells me."</p>
-        </div>
-        <div class="box key">
-          <span class="label">"How do you control cost?"</span>
-          <p>"Mostly through context: short standing instructions, one task per session, subagents for big searches, deterministic tools for formatting and tests, and the smallest model that does the job."</p>
+          <span class="label">A project session once it's running</span>
+          <p>Start: write two or three short issues, run <code>/spec</code> on each, fix the criteria. Approve plans and answer any Decision Cards. Let the agent build while you do something else. Later: review the PRs that are green, merge or send back. Once a week or so: a ten-minute retro on what went wrong.</p>
         </div>
       </section>
 
@@ -939,7 +1028,9 @@ about: Work for the factory
         <ul class="checklist">
           <li>A fast check command that runs in under a minute.</li>
           <li>CLAUDE.md under 200 lines, with the Decision Card format and the "always ask" list.</li>
-          <li>Hooks: format on edit, deny secrets and CI files, Stop hook runs the check.</li>
+          <li>Permissions: allow the check command, ask before installs, deny secrets and CI files.</li>
+          <li>Hooks: guard blocks dangerous commands, format on edit, Stop hook runs the check.</li>
+          <li>Agent runs in sandbox mode or a cloud session, with no production keys.</li>
           <li>CI workflow running the same check command, set as a required status check.</li>
           <li>Secret scanning and push protection turned on.</li>
           <li>AI reviewer on PR open, capped turns.</li>
@@ -968,6 +1059,9 @@ about: Work for the factory
           <li><a href="https://codemyspec.com/blog/openspec-vs-spec-kit">OpenSpec vs Spec Kit</a></li>
           <li><a href="https://www.explainthis.io/en/ai/software-factory">What is a software factory?</a></li>
           <li><a href="https://getunblocked.com/blog/what-is-an-ai-software-factory-buyers-guide/">What is an AI software factory? A buyer's guide (2026)</a></li>
+          <li><a href="https://playwright.dev/docs/test-agents">Playwright test agents: planner, generator, healer</a> (Playwright docs)</li>
+          <li><a href="https://dev.to/giscarunir/ai-should-not-be-your-quality-gate-a-safer-pattern-for-agentic-qa-2n88">AI should not be your quality gate</a> (DEV Community)</li>
+          <li><a href="https://qa.tech/blog/agentic-testing-questions-testguild-webinar">Agentic testing questions, TestGuild webinar</a> (QA.tech)</li>
         </ol>
         <p class="small">Framework details (versions, features) move quickly. Check each project's README before adopting it.</p>
       </footer>
